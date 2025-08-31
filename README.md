@@ -1,5 +1,3 @@
-# План обучения - Data Engineering с нуля до middle
-
 # Основные знания
 
 ## База по Git
@@ -8,20 +6,21 @@
 - [Что такое Git для Начинающих / GitHub за 30 минут / Git Уроки - Youtube](https://www.youtube.com/watch?v=VJm_AjiTEEc)
 - Книга [Pro Git](https://git-scm.com/book/ru/v2) - читать главу 1
 
-### Основы Markdown
+Основы Markdown
 - [Язык Markdown и файл README | Git и GitHub для начинающих - Youtube](https://www.youtube.com/watch?v=8lEDTrr-G4U)
 - [Markdown и его возможности: простой способ оформления текста](https://kurshub.ru/journal/blog/markdown-chto-eto/)
 - [Синтаксис Markdown: подробная шпаргалка для веб-разработчиков / Skillbox Media](https://skillbox.ru/media/code/yazyk-razmetki-markdown-shpargalka-po-sintaksisu-s-primerami/)
 
+Домашки по остальным темам тренируемся делать в Git, там же пишем документацию.
 ## SQL
 ### База по SQL
-Книга: [PostgreSQL. Основы языка SQL](https://postgrespro.ru/education/books/sqlprimer) - Глава 1 "Введение в базы данных и SQL" + ДЗ в конце главы
+Книга: [PostgreSQL. Основы языка SQL](https://postgrespro.ru/education/books/sqlprimer) - Глава 1 "Введение в базы данных и SQL" + ДЗ
 
-Бесплатный тренажер: [Интерактивный тренажер по SQL – Stepik](https://stepik.org/course/63054/promo)
-Целевой уровень знания SQL - Live кодинг на собесе. Проверяем на первом мок-интервью
-В помощь: [SQL 50 - Study Plan - LeetCode](https://leetcode.com/studyplan/top-sql-50/)
+Бесплатный тренажер: [Интерактивный тренажер по SQL – Stepik](https://stepik.org/course/63054/promo)  
+Целевой уровень знания SQL - Live кодинг на собесе. Проверяем на первом мок-интервью  
+В помощь: [SQL 50 - Study Plan - LeetCode](https://leetcode.com/studyplan/top-sql-50/)  
 ### Повышение знаний SQL
-Выполнение домашек в виртуалке от PostgresPro DBA 1- первый виртуальный стенд [dba1_student_guide.pdf](https://edu.postgrespro.ru/16/dba1-16/dba1_student_guide.pdf)
+Выполнение домашек в виртуалке от PostgresPro DBA 1- первый виртуальный стенд [dba1_student_guide.pdf](https://edu.postgrespro.ru/16/dba1-16/dba1_student_guide.pdf). Как вариант, можно развернуть в Docker, если менти технически может.
 Лекция [DBA1-16. 02. Использование psql](https://rutube.ru/video/12e30744d4e2e532a544da79d6c1ec69/?playlist=913726) +  [текстовые материалы лекции](https://edu.postgrespro.ru/16/dba1-16/dba1_02_tools_psql.html)
 
 - Книга: [PostgreSQL. Основы языка SQL](https://postgrespro.ru/education/books/sqlprimer)
@@ -35,19 +34,19 @@
 
 ## Python
 2 курса по Python - простой и расширенный
-["Поколение Python": курс для начинающих – Stepik](https://stepik.org/course/58852/info)
-["Поколение Python": курс для продвинутых – Stepik](https://stepik.org/course/68343/info)
-Кратко(???) про ООП, менеджеры контекста
-Pandas
-Jupyter Lab - кратко
+- ["Поколение Python": курс для начинающих – Stepik](https://stepik.org/course/58852/info)
+- ["Поколение Python": курс для продвинутых – Stepik](https://stepik.org/course/68343/info)
+- Кратко(???) про ООП, менеджеры контекста
+- Pandas
+- Jupyter Lab - кратко
 
 Полезно, но дороговато и не обязательно: хорошее комбо SQL + Python: ["Поколение Python": профи + ООП + SQL – Stepik](https://stepik.org/course/233341/promo?search=7181036958)
 
 Цель - LiveCoding простых задач Python, далее нужно будет для создания DAG Airflow
-
 ## Технические навыки
 ### Запись встреч
 OBS Studio
+[Настройка записи экрана](https://docs.google.com/document/d/1qd8uRYlAaZp9c5zpvCVBOvYQCEukGHI9PEPjnjahI1k/)
 ### Git
 Книга: [Pro Git](https://git-scm.com/book/ru/v2) - указать главы для чтения
 [Курс работы с Git и GitLab - ЭФКО ЦПР | YouTube плейлист](https://www.youtube.com/playlist?list=PLbf8m52BvqlFlblJqQKPuEU26pwgqe7zK) - указать номера лекций для просмотра и повторения за лектором.
@@ -61,6 +60,7 @@ OBS Studio
 
 ## Airflow
 Один из основных инструменов.
+Упрощенный docker compose: https://github.com/LexxaRRioo/rzv_de_shared_folder/tree/main/docker_compose
 Найти объяснение для менти...
 
 ## Курсовая работа
@@ -70,7 +70,6 @@ OBS Studio
 - Postgres
 - ETL
 - Исходные коды всего - в Git
-- Каждая новая фича разрабатывается в отдельной ветке
 
 ## Понятие сложности алгоритмов
 ### SQL
@@ -89,7 +88,7 @@ OBS Studio
 Видео по прохождению собесов от ОМ. Мои комментарии к нему, мой опыт
 Первые тренировки мок собесы, обратная связь
 
-Навыки поиска работы с HH и Habr карьера
+Навыки поиска работы с  HH и Habr карьера
 
 [Как накрутить опыт в резюме | «Ультимативный гайд» ‪@digital_ninja‬](https://www.youtube.com/watch?v=EPuogJuYsvY)
 [Как подтвердить опыт без трудовой / Хабр против работяг](https://www.youtube.com/watch?v=GHqABzA1zi8)
@@ -99,10 +98,15 @@ OBS Studio
 Поясняю, что главное - уметь пользоваться и отвечать на вопросы собесов. Уметь самому разворачивать сложные конфигурации - излишне, для этого в компаниях обычно есть DevOPS и DBA. Достаточно прочувствовать на простом docker стенде.
 ## Greenplum
 Дать теоретический материал - разница с Postgres.
+Предварительно: [Учебный курс по Greenplum](https://datafinder.ru/products/uchebnyy-kurs-po-greenplum) - дать только отдельные главы
 Контейнер с GreenPlum, несколько домашек по нему, чтобы прочувствовать работу распределенных запросов.
 - [sergeyosechkin/greenplum Tags | Docker Hub](https://hub.docker.com/r/sergeyosechkin/greenplum/tags)
 - [Как собрать Docker-образ Greengage DB | Greengage DB Docs](https://greengagedb.org/ru/docs-gg/current/use_docker.html)
 В сложности с виртуалками - только если менти сильно захочет. Не буду рекомендовать.
+
+## ClickHouse
+Бесплатный курс https://yandex.cloud/ru/training/clickhouse  
+Платный курс [ClickHouse для аналитика – Stepik](https://stepik.org/course/100210/promo?search=6551441002)  
 
 ## NiFi
 Делаем отдельный docker compose Postgres + Nifi
@@ -123,10 +127,16 @@ Kafka->NiFi->Postgres
 - [Гайд по Антистрессу](https://youtu.be/bu0YiXOKaoU)
 
 # Тех. материалы несортировано
+- [ananevsyu/SandBox_DB_public: Песочница для изучения различных технологий связанных с инженерией данных](https://gitflic.ru/project/ananevsyu/sandbox_db_public)
+    - Клон проекта [dementev_dev/sandbox_db_public-форк](https://gitflic.ru/project/dementev_dev/sandbox_db_public-fork)
 - [Индексы в БД - Youtube](https://www.youtube.com/watch?v=DyqtBiDrz3g)
 - [Spark + Iceberg in 1 Hour - Memory Tuning, Joins, Partition - Youtube](https://www.youtube.com/watch?v=3R-SLYK-P_0)
+- [Введение в Apache Iceberg. Основы, архитектура, как работает?](https://ivan-shamaev.ru/apache-iceberg-tutorial-architecture-how-to-work/#__Apache_Iceberg-2)
 - [Алгоритмы: теория и практика. Методы – Stepik](https://stepik.org/course/217/info)
 - [Алгоритмы: теория и практика. Структуры данных – Stepik](https://stepik.org/course/1547/promo)
+- [Apache Hadoop для самых маленьких: HDFS, RACK-AWARENESS, репликация и Data Locality - Youtube](https://youtu.be/0fsY5bW2l84)
+- [■ Книга. Введение в Apache Kafka для системных аналитиков и проектировщиков интеграций](https://systems.education/kafka)
+- 
 
 ## Записи ОМ
 - [Как пройти собеседование на программиста | Ультимативный гайд с ‪@om_nazarov‬ - Youtube](https://www.youtube.com/watch?v=tzSdiYZ52kI)
