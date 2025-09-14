@@ -1,4 +1,4 @@
-# Postgres + demoDB "bookings" в Docker — README для менти
+# Postgres + demoDB "bookings" в Docker
 
 Этот стенд поднимает локальный PostgreSQL в Docker и загружает учебную БД **Postgres Pro demo “Airlines/Bookings”**. После запуска можно работать через `psql` (внутри контейнера) и через DBeaver (с хоста).
 
