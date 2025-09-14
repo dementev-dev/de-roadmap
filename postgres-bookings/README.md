@@ -18,32 +18,37 @@ docker compose version
 
 ---
 
-## Состав проекта (что у вас должно быть в папке)
+## Структура проекта
+
+> Важно: файлы 00_init.sql и 01_bookings.sql создаются скриптом download_db.sh и изначально отсутствуют.
+
 ```
 postgres-bookings/
 ├─ docker-compose.yml
+├─ download_db.sh       # скрипт скачивания и подготовки демо-БД
 ├─ .env                 # опционально: логин/пароль/порт
-├─ initdb/
-│   ├─ 00_init.sql      # создаёт БД demo (страхует первый запуск)
-│   └─ 01_bookings.sql  # скрипт с учебными данными
+├─ initdb/              # изначально пусто
 └─ psql_sh              # помощник: открыть psql внутри контейнера
 ```
-
-> Если нет файлов `initdb/00_init.sql` и `initdb/01_bookings.sql`, запустите скрипт ниже (раздел «Быстрый старт», шаг 1).
-
+После выполнения шага «Быстрый старт → п.1» в initdb/ появятся:
+```
+initdb/
+├─ 00_init.sql # создаёт БД demo (страхует первый запуск)
+└─ 01_bookings.sql # учебные данные Postgres Pro
+```
 ---
 
 ## Быстрый старт (Linux/macOS/WSL2)
-1) Подготовьте init‑скрипты (скачивание демо‑БД):
+1) Скачать и подготовить демо‑БД:
 ```bash
 bash download_db.sh
 chmod +x psql_sh
 ```
-2) Поднимите кластер:
+2) Запустить кластер:
 ```bash
 docker compose up -d
 ```
-3) Проверьте, что сервис готов (статус `healthy`) и подключайтесь:
+3) Проверить статус и подключиться к psql:
 ```bash
 docker compose ps
 ./psql_sh
@@ -53,22 +58,14 @@ docker compose ps
 \dt;
 SELECT COUNT(*) FROM bookings.flights;
 ```
-
-> **DBeaver:** Host `127.0.0.1`, Port `5432` (или ваш из `.env`), Database `demo`, User `postgres`, Password `postgres`, SSL — Off.
-
 ---
-
-## Как поменять порт/логин/пароль
-Создайте файл `.env` в корне проекта:
-```ini
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-PG_PORT=5432
-```
-Перезапустите контейнеры:
-```bash
-docker compose down && docker compose up -d
-```
+## Подключение из DBeaver
+- Host: 127.0.0.1
+- Port: 5432 (или ваш из .env)
+- Database: demo
+- User: postgres
+- Password: postgres
+- SSL: Off
 
 ---
 
