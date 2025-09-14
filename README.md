@@ -18,19 +18,22 @@
 
 Бесплатный тренажер: [Интерактивный тренажер по SQL – Stepik](https://stepik.org/course/63054/promo)  
 Целевой уровень знания SQL - Live кодинг на собесе. Проверяем на первом мок-интервью  
-В помощь: [SQL 50 - Study Plan - LeetCode](https://leetcode.com/studyplan/top-sql-50/)  
-### Повышение знаний SQL
-Выполнение домашек в виртуалке от PostgresPro DBA 1- первый виртуальный стенд [dba1_student_guide.pdf](https://edu.postgrespro.ru/16/dba1-16/dba1_student_guide.pdf). Как вариант, можно развернуть в Docker, если менти технически может.
-Лекция [DBA1-16. 02. Использование psql](https://rutube.ru/video/12e30744d4e2e532a544da79d6c1ec69/?playlist=913726) +  [текстовые материалы лекции](https://edu.postgrespro.ru/16/dba1-16/dba1_02_tools_psql.html)
+**СТЕ**
+ - Зачем нам CTE: [Getting started with CTEs | dbt Labs](https://www.getdbt.com/blog/getting-started-with-cte)
+ - Подробнее про синтаксис: [PostgreSQL : Документация: 17: 7.8. Запросы WITH (Общие табличные выражения) : Компания Postgres Professional](https://postgrespro.ru/docs/postgresql/17/queries-with)
 
-- Книга: [PostgreSQL. Основы языка SQL](https://postgrespro.ru/education/books/sqlprimer)
-    - Глава 8 - Индексы + ДЗ
-    - Глава 9 - Транзакции
-    - Глава 10 - Повышение производительности + ДЗ
-### Углубление знаний SQL как языка программирования
-- [DEV1-12. 08. Функции](https://rutube.ru/video/21b867b6857583aa9429400dfc4bdf25/) + [edu.postgrespro.ru/dev1-12/dev1_08_sql_func.html](https://edu.postgrespro.ru/dev1-12/dev1_08_sql_func.html) + ДЗ
-- [DEV1-12. 09. Процедуры](https://rutube.ru/video/c34d23384d0948a74387e93c7a7f6e37/) [edu.postgrespro.ru/dev1-12/dev1_09_sql_proc.html](https://edu.postgrespro.ru/dev1-12/dev1_09_sql_proc.html) + ДЗ
-- [DEV1-12. 11. Обзор и конструкции языка PL/pgSQL](https://rutube.ru/video/be67209d5f6eee34976a5c741e75bff8/) - достаточно ознакомиться
+Для дальнейшей тренировки и поддержания уровня можно использовать [Database - LeetCode](https://leetcode.com/problem-list/database/). Хорошая подборка задачек: [SQL 50 - Study Plan - LeetCode](https://leetcode.com/studyplan/top-sql-50/)
+### Повышение знаний SQL
+Смотрим курс от Postgres Pro [DEV1](https://postgrespro.ru/education/courses/DEV1)
+Темы - от "Введение" до "SQL" включительно, "Управление доступом", "Резервное копирование". Для лучшего усваивания материала проделываем все примеры и домашние задания из конспектов лекция.   
+С темой "PL/pgSQL" можно ознакомиться обзорно.
+
+Для развития навыков инженера будет полезно лабораторные работы делать не в виртуальной машине, а в docker контейнере. Предложенный (не обязательный) вариант - в каталоге `postgres-bookings` репозитория.
+
+Для дальнейшего закрепления материала - читаем книгу [PostgreSQL. Основы языка SQL](https://postgrespro.ru/education/books/sqlprimer)
+- Глава 8 - Индексы + ДЗ
+- Глава 9 - Транзакции
+- Глава 10 - Повышение производительности + ДЗ
 
 ## Python
 2 курса по Python - простой и расширенный
@@ -43,23 +46,27 @@
 Полезно, но дороговато и не обязательно: хорошее комбо SQL + Python: ["Поколение Python": профи + ООП + SQL – Stepik](https://stepik.org/course/233341/promo?search=7181036958)
 
 Цель - LiveCoding простых задач Python, далее нужно будет для создания DAG Airflow
+
 ## Технические навыки
 ### Запись встреч
 OBS Studio
 [Настройка записи экрана](https://docs.google.com/document/d/1qd8uRYlAaZp9c5zpvCVBOvYQCEukGHI9PEPjnjahI1k/)
+
 ### Git
 Книга: [Pro Git](https://git-scm.com/book/ru/v2) - указать главы для чтения
 [Курс работы с Git и GitLab - ЭФКО ЦПР | YouTube плейлист](https://www.youtube.com/playlist?list=PLbf8m52BvqlFlblJqQKPuEU26pwgqe7zK) - указать номера лекций для просмотра и повторения за лектором.
 Целевой уровень знания - понимание процесса GitFlow. Как создать ветку, влить изменения в другие ветки. Понимание, зачем.
 На собесах обычно не спрашивают, но нужно в работе.
+
 ### Docker
 - Postgres (развертывание, допиливание, запекание в него учебной БД, выгрузка на docker hub)
 - Основа для будущих домашних работ - сборка стендов. Хранение в Git и проверка ментором.
+
 ### Методы разработки (водопад, scrum, kanban)
 Найти краткие обзоры методов разработки. Потом проговорить на занятии, когда что используется
 
 ## Airflow
-Один из основных инструменов.
+Один из основных инструментов.
 Упрощенный docker compose: https://github.com/LexxaRRioo/rzv_de_shared_folder/tree/main/docker_compose
 Найти объяснение для менти...
 
@@ -95,7 +102,7 @@ OBS Studio
 [Как успешно пройти испытательный срок в IT | «Ультимативный гайд» c @digital_ninja - Youtube](https://www.youtube.com/watch?v=r1lWP5rYVdk)
 
 # Расширенные навыки
-Поясняю, что главное - уметь пользоваться и отвечать на вопросы собесов. Уметь самому разворачивать сложные конфигурации - излишне, для этого в компаниях обычно есть DevOPS и DBA. Достаточно прочувствовать на простом docker стенде.
+Поясняю, что главное - уметь пользоваться и отвечать на вопросы собесов. Уметь самому разворачивать сложные конфигурации - излишне, для этого в компаниях обычно есть DevOps и DBA. Достаточно прочувствовать на простом docker стенде.
 ## Greenplum
 Дать теоретический материал - разница с Postgres.
 Предварительно: [Учебный курс по Greenplum](https://datafinder.ru/products/uchebnyy-kurs-po-greenplum) - дать только отдельные главы
@@ -109,6 +116,7 @@ OBS Studio
 Платный курс [ClickHouse для аналитика – Stepik](https://stepik.org/course/100210/promo?search=6551441002)  
 
 ## NiFi
+Плейлист [Apache NiFi с нуля за 3 часа. Конструктор вместо кода - Youtube](https://youtube.com/playlist?list=PL4MpKy3QjNp_rOEEibc4Ro8UK4g8vLX6_&si=W_hidjHmBOZ_aUfS) - первые 4 видео. Дальше - по желанию.
 Делаем отдельный docker compose Postgres + Nifi
 В NiFi собираем генератор данных
 
