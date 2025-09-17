@@ -7,7 +7,7 @@ down:
 	docker compose -f docker-compose.yml down -v
 
 airflow-init:
-	docker compose -f docker-compose.yml run --rm airflow-init
+	docker compose -f docker-compose.yml run --rm --profile init airflow-init
 
 logs:
 	docker compose -f docker-compose.yml logs -f airflow-webserver airflow-scheduler
