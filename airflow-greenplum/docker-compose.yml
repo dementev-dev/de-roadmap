@@ -118,7 +118,6 @@ services:
   airflow-init:
     image: apache/airflow:2.9.2
     # container_name: gp_airflow_init
-    profiles: ["init"]
     env_file: .env
     environment:
       AIRFLOW__CORE__LOAD_EXAMPLES: "False"
@@ -135,11 +134,7 @@ services:
           airflow db migrate && break || echo 'waiting for pgmeta' && sleep 3;
         done;
         # Создаём админа; при повторном запуске не падаем
-        airflow users create
-          --username ${AIRFLOW_USER}
-          --password ${AIRFLOW_PASSWORD}
-          --firstname Admin --lastname User
-          --role Admin --email admin@example.org || true
+        airflow users create --username ${AIRFLOW_USER} --password ${AIRFLOW_PASSWORD} --firstname Admin --lastname User --role Admin --email admin@example.org || true
       "
     depends_on:
       pgmeta:
