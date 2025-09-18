@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   # Postgres только для Airflow метаданных
   pgmeta:
@@ -21,17 +19,23 @@ services:
       retries: 20
 
   greenplum:
-    image: datagrip/greenplum:6.8
+    image: woblerr/greenplum:6.27.1
     # container_name: gp_single
-    hostname: gpdbsne
+    # hostname: gpdbsne
+    environment:
+      GREENPLUM_USER: ${GP_USER:-gpadmin}
+      GREENPLUM_PASSWORD: ${GP_PASSWORD:-gpadmin}
+      GREENPLUM_DATABASE_NAME: ${GP_DB:-gpadmin}
+      # GP_PORT: ${GP_PORT:-5432}
     # Порты: внешний 5432
     ports:
-      - "5432:5432"
+      - "${GP_PORT}:5432"
     volumes:
       - ./sql:/sql:ro
+      - greenplum_data:/data
     # Простая проверка доступности: psql откликается
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 || echo 1"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U ${GP_USER:-gpadmin} -d ${GP_DB:-gpadmin} || echo 1"]
       interval: 10s
       timeout: 5s
       retries: 30
@@ -143,3 +147,4 @@ services:
 volumes:
   pgmeta:
   kafka-ui-data:
+  greenplum_data:
