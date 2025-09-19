@@ -1,0 +1,5 @@
+# GreenPlum Segment Host File
+# List of segment hosts only
+
+gp-segment-1
+gp-segment-2

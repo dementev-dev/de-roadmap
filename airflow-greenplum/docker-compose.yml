@@ -18,27 +18,85 @@ services:
       timeout: 5s
       retries: 20
 
-  greenplum:
+  # GreenPlum Master Node
+  gp-master:
     image: woblerr/greenplum:6.27.1
-    # container_name: gp_single
-    # hostname: gpdbsne
+    container_name: gp_master
+    hostname: gp-master
     environment:
       GREENPLUM_USER: ${GP_USER:-gpadmin}
       GREENPLUM_PASSWORD: ${GP_PASSWORD:-gpadmin}
       GREENPLUM_DATABASE_NAME: ${GP_DB:-gpadmin}
-      # GP_PORT: ${GP_PORT:-5432}
-    # Порты: внешний 5432
+      GP_ROLE: master
+      GP_SEGMENTS: "gp-segment-1,gp-segment-2"
     ports:
-      - "${GP_PORT}:5432"
+      - "${GP_PORT:-5432}:5432"
     volumes:
       - ./sql:/sql:ro
-      - greenplum_data:/data
-    # Простая проверка доступности: psql откликается
+      - gp_master_data:/data
+      - ./greenplum/config:/opt/greenplum/config:ro
+    command: >
+      bash -lc "
+        /opt/greenplum/config/init_cluster.sh &&
+        tail -f /dev/null
+      "
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U ${GP_USER:-gpadmin} -d ${GP_DB:-gpadmin} || echo 1"]
       interval: 10s
       timeout: 5s
       retries: 30
+    networks:
+      - greenplum-network
+
+  # GreenPlum Segment Node 1
+  gp-segment-1:
+    image: woblerr/greenplum:6.27.1
+    container_name: gp_segment_1
+    hostname: gp-segment-1
+    environment:
+      GREENPLUM_USER: ${GP_USER:-gpadmin}
+      GREENPLUM_PASSWORD: ${GP_PASSWORD:-gpadmin}
+      GREENPLUM_DATABASE_NAME: ${GP_DB:-gpadmin}
+      GP_ROLE: segment
+      GP_SEGMENT_ID: 1
+      GP_MASTER_HOST: gp-master
+    volumes:
+      - gp_segment1_data:/data
+      - ./greenplum/config:/opt/greenplum/config:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U ${GP_USER:-gpadmin} -d ${GP_DB:-gpadmin} || echo 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    networks:
+      - greenplum-network
+    depends_on:
+      - gp-master
+
+  # GreenPlum Segment Node 2
+  gp-segment-2:
+    image: woblerr/greenplum:6.27.1
+    container_name: gp_segment_2
+    hostname: gp-segment-2
+    environment:
+      GREENPLUM_USER: ${GP_USER:-gpadmin}
+      GREENPLUM_PASSWORD: ${GP_PASSWORD:-gpadmin}
+      GREENPLUM_DATABASE_NAME: ${GP_DB:-gpadmin}
+      GP_ROLE: segment
+      GP_SEGMENT_ID: 2
+      GP_MASTER_HOST: gp-master
+    volumes:
+      - gp_segment2_data:/data
+      - ./greenplum/config:/opt/greenplum/config:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U ${GP_USER:-gpadmin} -d ${GP_DB:-gpadmin} || echo 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    networks:
+      - greenplum-network
+    depends_on:
+      - gp-master
 
   kafka:
     image: apache/kafka:3.8.0
@@ -95,7 +153,7 @@ services:
         condition: service_healthy
       kafka:
         condition: service_started
-      greenplum:
+      gp-master:
         condition: service_healthy
 
   airflow-scheduler:
@@ -116,7 +174,7 @@ services:
         condition: service_healthy
       kafka:
         condition: service_started
-      greenplum:
+      gp-master:
         condition: service_healthy
 
   airflow-init:
@@ -147,4 +205,13 @@ services:
 volumes:
   pgmeta:
   kafka-ui-data:
-  greenplum_data:
+  gp_master_data:
+  gp_segment1_data:
+  gp_segment2_data:
+
+networks:
+  greenplum-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

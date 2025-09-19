@@ -1,0 +1,6 @@
+# GreenPlum Host File
+# List of all hosts in the cluster
+
+gp-master
+gp-segment-1
+gp-segment-2

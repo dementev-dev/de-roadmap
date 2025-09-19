@@ -1,0 +1,37 @@
+# GreenPlum Cluster Configuration
+# Configuration for 2 segments without mirrors
+
+# Master Configuration
+ARRAY_NAME="GreenPlum Data Platform"
+SEG_PREFIX=gpseg
+PORT_BASE=6000
+declare -a DATA_DIRECTORY=(/data/primary /data/primary)
+
+# Master Settings
+MASTER_HOSTNAME=gp-master
+MASTER_DIRECTORY=/data/master
+MASTER_PORT=5432
+MASTER_DATA_DIRECTORY=/data/master/gpseg-1
+
+# Segment Settings
+TRUSTED_SHELL=ssh
+CHECK_POINT_SEGMENTS=8
+ENCODING=UNICODE
+
+# Segment Hosts
+declare -a MACHINE_LIST_FILE=(gp-segment-1 gp-segment-2)
+
+# Segment Configuration
+declare -a DATA_DIRECTORY=(/data/primary /data/primary)
+declare -a PORT_ARRAY=(6000 6001)
+
+# Mirror Configuration (disabled)
+MIRROR_PORT_BASE=7000
+declare -a MIRROR_DATA_DIRECTORY=()
+declare -a MIRROR_MACHINE_LIST_FILE=()
+
+# Standby Master (disabled)
+STANDBY_HOSTNAME=
+
+# Logging
+LOG_FILE=/data/logs/gpinitsystem.log
