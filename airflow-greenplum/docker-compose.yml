@@ -18,17 +18,17 @@ services:
       timeout: 5s
       retries: 20
 
-  # GreenPlum Master Node
   gp-master:
+  # GreenPlum Master Node
     image: woblerr/greenplum:6.27.1
     container_name: gp_master
     hostname: gp-master
     environment:
+      GREENPLUM_DEPLOYMENT: master
       GREENPLUM_USER: ${GP_USER:-gpadmin}
       GREENPLUM_PASSWORD: ${GP_PASSWORD:-gpadmin}
       GREENPLUM_DATABASE_NAME: ${GP_DB:-gpadmin}
-      GP_ROLE: master
-      GP_SEGMENTS: "gp-segment-1,gp-segment-2"
+      # GP_SEGMENTS: "gp-segment-1,gp-segment-2"
     ports:
       - "${GP_PORT:-5432}:5432"
     volumes:
@@ -47,11 +47,13 @@ services:
       retries: 30
     networks:
       - greenplum-network
+    depends_on:
+      - gp-segment-1
+      - gp-segment-2
 
   # GreenPlum Segment Node 1
   gp-segment-1:
     image: woblerr/greenplum:6.27.1
-    container_name: gp_segment_1
     hostname: gp-segment-1
     environment:
       GREENPLUM_USER: ${GP_USER:-gpadmin}
@@ -70,13 +72,10 @@ services:
       retries: 30
     networks:
       - greenplum-network
-    depends_on:
-      - gp-master
 
   # GreenPlum Segment Node 2
   gp-segment-2:
     image: woblerr/greenplum:6.27.1
-    container_name: gp_segment_2
     hostname: gp-segment-2
     environment:
       GREENPLUM_USER: ${GP_USER:-gpadmin}
@@ -95,8 +94,6 @@ services:
       retries: 30
     networks:
       - greenplum-network
-    depends_on:
-      - gp-master
 
   kafka:
     image: apache/kafka:3.8.0
@@ -151,10 +148,10 @@ services:
     depends_on:
       pgmeta:
         condition: service_healthy
-      kafka:
-        condition: service_started
-      gp-master:
-        condition: service_healthy
+      # kafka:
+      #   condition: service_started
+      # gp-master:
+      #   condition: service_healthy
 
   airflow-scheduler:
     image: apache/airflow:2.9.2
@@ -211,7 +208,4 @@ volumes:
 
 networks:
   greenplum-network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
+

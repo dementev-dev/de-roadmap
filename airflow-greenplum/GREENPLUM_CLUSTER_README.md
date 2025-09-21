@@ -1,4 +1,5 @@
 # GreenPlum Cluster Configuration
+Собран на основе https://github.com/woblerr/docker-greenplum
 
 ## Обзор
 
