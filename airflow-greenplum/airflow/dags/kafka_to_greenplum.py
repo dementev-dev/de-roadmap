@@ -9,50 +9,18 @@ from typing import List, Tuple, Optional
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from confluent_kafka import Consumer, KafkaException, Producer
-
-# Пакеты для прямого подключения и батч-загрузки
-import psycopg2
 from psycopg2.extras import execute_values
 
-# Airflow Connection ID для Greenplum (создаётся в UI или CLI).
-GP_CONN_ID = os.getenv("GP_CONN_ID", "greenplum_conn")
-GP_USE_AIRFLOW_CONN = os.getenv("GP_USE_AIRFLOW_CONN", "true").lower() in ("1", "true", "yes")
+from helpers.greenplum import get_gp_conn
 
 KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "kafka:9092")
 TOPIC = os.getenv("KAFKA_TOPIC", "orders")
 BATCH_SIZE = int(os.getenv("KAFKA_BATCH_SIZE", "500"))
 POLL_TIMEOUT_S = int(os.getenv("KAFKA_POLL_TIMEOUT", "10"))
-
-
-def _get_gp_conn():
-    """Получаем соединение с Greenplum через Airflow Connection или через ENV-DSN.
-
-    Если переменная `GP_USE_AIRFLOW_CONN` = false или отсутствует провайдер Postgres,
-    используем ENV-подключение напрямую (psycopg2).
-    """
-    if GP_USE_AIRFLOW_CONN:
-        try:
-            from airflow.providers.postgres.hooks.postgres import PostgresHook  # импорт при необходимости
-
-            hook = PostgresHook(postgres_conn_id=GP_CONN_ID)
-            return hook.get_conn()
-        except Exception:
-            # Фоллбек на прямое подключение
-            pass
-
-    return psycopg2.connect(
-        dbname=os.getenv("GP_DB", "gpadmin"),
-        user=os.getenv("GP_USER", "gpadmin"),
-        password=os.getenv("GP_PASSWORD", ""),
-        host=os.getenv("GP_HOST", "greenplum"),
-        port=int(os.getenv("GP_PORT", "5432")),
-    )
-
-
 def _create_table():
     ddl = """
     CREATE TABLE IF NOT EXISTS public.orders (
-        order_id BIGINT PRIMARY KEY,
+        order_id BIGINT,
         order_ts TIMESTAMP NOT NULL,
         customer_id BIGINT NOT NULL,
         amount NUMERIC(12,2) NOT NULL
@@ -60,7 +28,7 @@ def _create_table():
     WITH (appendonly=true, orientation=column, compresstype=zlib)
     DISTRIBUTED BY (order_id);
     """
-    with _get_gp_conn() as conn, conn.cursor() as cur:
+    with get_gp_conn() as conn, conn.cursor() as cur:
         cur.execute(ddl)
         conn.commit()
 
@@ -79,6 +47,7 @@ def _produce(n=1000):
 
 
 def _flush_batch(cur, rows: List[Tuple]):
+    """Insert deduplicated batch of rows into public.orders for GP6 (no PK support)."""
     if not rows:
         return
     # Дедупликация внутри батча по первичному ключу (order_id)
@@ -114,7 +83,7 @@ def _consume_and_load(max_messages=1000, timeout_s: Optional[int] = None):
     )
     consumer.subscribe([TOPIC])
 
-    with _get_gp_conn() as conn, conn.cursor() as cur:
+    with get_gp_conn() as conn, conn.cursor() as cur:
         batch: List[Tuple] = []
         consumed = 0
         while consumed < max_messages:
