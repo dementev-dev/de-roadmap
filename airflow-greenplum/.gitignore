@@ -3,4 +3,6 @@
 # Do not commit secrets
 .env
 .env.*
-/airflow/dags/__pycache__
+__pycache__/
+*/__pycache__/
+*.pyc
