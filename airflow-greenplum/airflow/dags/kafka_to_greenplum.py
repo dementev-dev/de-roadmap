@@ -13,10 +13,11 @@ from psycopg2.extras import execute_values
 
 from helpers.greenplum import get_gp_conn
 
-KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "kafka:9092")
+KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "kafka:29092")
 TOPIC = os.getenv("KAFKA_TOPIC", "orders")
 BATCH_SIZE = int(os.getenv("KAFKA_BATCH_SIZE", "500"))
 POLL_TIMEOUT_S = int(os.getenv("KAFKA_POLL_TIMEOUT", "10"))
+MAX_EMPTY_POLLS = int(os.getenv("KAFKA_MAX_EMPTY_POLLS", "3"))
 def _create_table():
     ddl = """
     CREATE TABLE IF NOT EXISTS public.orders (
@@ -86,15 +87,13 @@ def _consume_and_load(max_messages=1000, timeout_s: Optional[int] = None):
     with get_gp_conn() as conn, conn.cursor() as cur:
         batch: List[Tuple] = []
         consumed = 0
-        while consumed < max_messages:
+        empty_polls = 0
+        while consumed < max_messages and empty_polls < MAX_EMPTY_POLLS:
             msg = consumer.poll(timeout_s)
             if msg is None:
-                # Нет новых сообщений — сбрасываем остаток батча и выходим
-                if batch:
-                    _flush_batch(cur, batch)
-                    conn.commit()
-                    batch.clear()
-                break
+                empty_polls += 1
+                continue
+            empty_polls = 0
             if msg.error():
                 raise KafkaException(msg.error())
 
@@ -102,7 +101,7 @@ def _consume_and_load(max_messages=1000, timeout_s: Optional[int] = None):
             batch.append(
                 (
                     int(data["order_id"]),
-                    data["order_ts"],
+                    datetime.fromisoformat(data["order_ts"]),
                     int(data["customer_id"]),
                     float(data["amount"]),
                 )

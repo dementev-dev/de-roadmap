@@ -77,10 +77,12 @@ airflow connections add 'greenplum_conn' \
 - Greenplum: `localhost:${GP_PORT:-5432}` (внешний порт проброшен из контейнера)
 - Postgres (Airflow metadata): `localhost:5433`
 - Kafka (для клиентов на хосте): `localhost:9092`
+- Kafka (из контейнеров Docker): `kafka:29092`
 
 ### Параметры чтения/загрузки
 - `KAFKA_BATCH_SIZE` — размер батча при вставке в Greenplum (по умолчанию 500).
 - `KAFKA_POLL_TIMEOUT` — таймаут ожидания сообщения в секундах (по умолчанию 10).
+- `KAFKA_MAX_EMPTY_POLLS` — сколько подряд пустых `poll` допускается перед выходом из цикла (по умолчанию 3).
 
 ### Проверка загрузки
 ```bash
