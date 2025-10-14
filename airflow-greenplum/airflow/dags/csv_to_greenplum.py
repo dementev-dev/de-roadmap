@@ -39,21 +39,35 @@ def _generate_csv(rows: int, csv_dir: Path) -> str:
     timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
     csv_path = csv_dir / f"orders_{timestamp}.csv"
 
-    base_order_id = int(datetime.utcnow().timestamp())
-    order_ids: List[int] = list(range(base_order_id * 1_000, base_order_id * 1_000 + rows))
-    now = datetime.utcnow()
-    order_ts = [(now - timedelta(seconds=i)).isoformat() for i in range(rows)]
-    customer_ids = [random.randint(1, 1_000) for _ in range(rows)]
-    amounts = [round(random.uniform(10, 500), 2) for _ in range(rows)]
-
-    df = pd.DataFrame(
-        {
-            "order_id": order_ids,
-            "order_ts": order_ts,
-            "customer_id": customer_ids,
-            "amount": amounts,
-        }
-    )
+    # Генерируем данные в pandas-стиле
+    base_order_id = int(datetime.utcnow().timestamp() * 1_000)
+    
+    # Создаём DataFrame с использованием pandas методов
+    df = pd.DataFrame({
+        # Уникальные order_id начиная с базового значения
+        "order_id": pd.Series(range(base_order_id, base_order_id + rows), dtype="int64"),
+        
+        # Временные метки с интервалом в 1 секунду в обратном порядке
+        "order_ts": pd.date_range(
+            end=datetime.utcnow(),
+            periods=rows,
+            freq="1S"
+        ).sort_values(ascending=False),
+        
+        # Случайные customer_id от 1 до 1000
+        "customer_id": pd.Series(
+            random.choices(range(1, 1001), k=rows),
+            dtype="int64"
+        ),
+        
+        # Случайные суммы от 10 до 500 с округлением до 2 знаков
+        "amount": pd.Series(
+            [round(random.uniform(10, 500), 2) for _ in range(rows)],
+            dtype="float64"
+        )
+    })
+    
+    # Сохраняем CSV без индекса
     df.to_csv(csv_path, index=False)
     logging.info("CSV сохранён: %s (строк: %s)", csv_path, len(df))
     return str(csv_path)
