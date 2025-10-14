@@ -50,7 +50,7 @@ def assert_orders_table_exists(conn) -> None:
             """
         )
         if cur.fetchone() is None:
-            raise ValueError("Таблица public.orders не найдена; запусти DAG kafka_to_greenplum.")
+            raise ValueError("Таблица public.orders не найдена; запусти DAG csv_to_greenplum.")
 
 
 def fetch_orders_schema(conn) -> Sequence[Tuple[str, str]]:
@@ -82,7 +82,7 @@ def fetch_orders_count(conn) -> int:
 def assert_orders_have_rows(conn) -> None:
     """Проверяет, что таблица orders не пустая."""
     if fetch_orders_count(conn) <= 0:
-        raise ValueError("Таблица public.orders пустая — запусти DAG kafka_to_greenplum перед проверкой.")
+        raise ValueError("Таблица public.orders пустая — запусти DAG csv_to_greenplum перед проверкой.")
 
 
 def fetch_orders_duplicates(conn) -> int:
