@@ -1,51 +1,57 @@
-# Repository Guidelines
+# Repository Guidelines (для агентa и контрибьюторов)
 
-## Project Structure & Module Organization
-- `airflow/dags/` — Airflow DAGs (e.g., `airflow/dags/kafka_to_greenplum.py`).
-- `airflow/requirements.txt` — Python deps installed inside Airflow containers.
-- `sql/` — database DDL and helpers (e.g., `sql/ddl_gp.sql`).
-- `docker-compose.yml` — Greenplum, Kafka, Airflow, Postgres (metadata DB).
-- `Makefile` — local DX commands; see targets below.
-- `.env(.example)` — runtime configuration; never commit real secrets.
+Эта репа — учебный стенд для студентов (менти), которые только начинают с Airflow/Greenplum и Python. Пожалуйста, держите решения простыми, стабильными и хорошо объяснёнными.
 
-## Build, Test, and Development Commands
-- `make up` — start the full stack.
-- `make airflow-init` — migrate metadata DB and create admin user.
-- `make logs` — follow webserver and scheduler logs.
-- `make ddl-gp` — apply DDL to Greenplum.
-- `make gp-psql` — open `psql` in the GP container.
-- `make down` — stop stack and remove volumes.
-Example: `make up && make airflow-init` then open `http://localhost:8080`.
+## Структура проекта
+- `airflow/dags/` — DAG-файлы (например, `csv_to_greenplum.py`, `data_quality_greenplum.py`).
+- `airflow/requirements.txt` — зависимости, которые ставятся внутри контейнеров Airflow.
+- `sql/` — DDL и вспомогательные SQL (например, `sql/ddl_gp.sql`).
+- `docker-compose.yml` — Greenplum, Airflow, Postgres (мета-БД).
+- `Makefile` — удобные команды для локальной работы.
+- `.env(.example)` — настройки окружения (реальные секреты не коммитим).
 
-## Локальное Python-окружение
-- Окружением управляет `uv`: достаточно выполнить `uv sync` (или `make dev-sync`), чтобы подтянуть нужный Python, создать `.venv` и установить зависимости.
-- `make dev-setup` пригодится, когда нужно перепинить версию Python или прогреть кэш (вызовет `uv python install` + `uv python pin` перед `uv sync`).
-- Команды разработчика: `make test`, `make lint`, `make fmt` (под капотом выполняются через `uv run`).
-- Не используем `pip install --user`; если пакеты попали в user-site, удаляем через `pip uninstall <package>` и проверяем `pip list --user`.
-- В IDE выбираем интерпретатор из `.venv` (`.venv\Scripts\python.exe` на Windows, `.venv/bin/python` на Linux/macOS).
+## Команды (основные)
+- `make up` — поднять весь стек.
+- `make airflow-init` — инициализировать мета-БД Airflow и создать пользователя.
+- `make logs` — логи webserver и scheduler.
+- `make ddl-gp` — применить DDL к Greenplum.
+- `make gp-psql` — открыть `psql` в контейнере Greenplum от `gpadmin`.
+- `make down` — остановить и удалить тома (данные будут потеряны).
 
-## Coding Style & Naming Conventions
-- Python: PEP 8, 4-space indents, `snake_case` for functions/vars, DAG IDs lower_snake_case.
-- Imports: stdlib → third-party → local; prefer one module per line.
-- SQL: uppercase keywords, `snake_case` identifiers, end statements with `;`.
-- Filenames: DAGs as `<source>_to_<target>.py` (e.g., `kafka_to_greenplum.py`).
-- Formatting: if available, use `black` (88 cols) and `isort`; otherwise keep existing style.
-- Language: комментарии, docstrings и документацию (README, описания PR/Issues) пишем на русском; имена идентификаторов и код — на английском.
+Пример: `make up && make airflow-init`, затем открыть `http://localhost:8080`.
 
-## Testing Guidelines
-- No test suite yet. If adding tests, use `pytest` under `tests/` with `test_*.py`.
-- Prefer unit tests for Python callables used by tasks; mock env vars and external systems.
-- Run locally with `pytest -q`.
+## Локальное Python‑окружение
+- Используем `uv`: достаточно `uv sync` (или `make dev-sync`) — подтянет Python, создаст `.venv`, установит зависимости.
+- `make dev-setup` полезен при смене версии Python (выполнит `uv python install` + `uv python pin` перед `uv sync`).
+- Проверки: `make test`, `make lint`, `make fmt` (выполняются через `uv run`).
+- Не используем `pip install --user`; если что‑то попало в user‑site — удалить `pip uninstall <package>` и проверить `pip list --user`.
+- В IDE выбираем интерпретатор из `.venv`.
 
-## Commit & Pull Request Guidelines
-- Use Conventional Commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:` etc. Example: `feat(dags): load orders to Greenplum`.
-- Keep PRs focused; include a description, run steps, and relevant screenshots (e.g., DAG graph or task logs).
-- Link issues; update `README.md` and DDL when behavior or schema changes.
+## Стиль кода
+- Python: PEP 8, 4 пробела, `snake_case`; `dag_id` — `lower_snake_case`.
+- Импорты: stdlib → third‑party → local, по одному модулю в строке.
+- SQL: ключевые слова UPPERCASE, идентификаторы `snake_case`, завершаем `;`.
+- Форматирование: `black` (88 cols) и `isort`. Если не уверены — запустите `make fmt`.
+- Язык: комментарии, docstring и документацию — на русском; имена идентификаторов — на английском.
 
-## Security & Configuration Tips
-- Configure via `.env`; do not hardcode credentials. Common vars: `GP_USER`, `GP_PASSWORD`, `GP_DB`, `GP_PORT`, `PG_*`, `AIRFLOW_*`.
-- Be cautious with `make down` (removes volumes). Pin images/deps; prefer digests for critical images.
+## Тестирование
+- Тесты лежат в `tests/` (pytest). Запуск: `make test`.
+- Есть юнит‑тесты для `helpers/greenplum.py` и smoke‑тесты DAG‑структуры (`tests/test_dags_smoke.py`).
+- Smoke‑тесты DAG автоматически пропускаются, если Airflow не установлен в venv.
+- Для ручного прогона стенда см. `TESTING.md` (пошаговый чек‑лист для студентов).
 
-## Agent-Specific Notes
-- Keep changes minimal and localized; do not rename Make targets without updating docs.
-- Validate by running `make up`, `make airflow-init`, and inspecting the DAG in Airflow.
+## Pull Requests
+- Conventional Commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`. Пример: `feat(dags): load orders to Greenplum`.
+- Держите изменения минимальными и локальными. Не переименовывайте Make‑таргеты без обновления документации.
+- В описании PR добавляйте скрин DAG‑графа или логи задач, если менялась логика.
+- При изменении схемы/поведения — обновляйте `README.md` и `sql/ddl_gp.sql`.
+
+## Безопасность и конфигурация
+- Все настройки — через `.env`; креды в коде не хардкодим. Частые переменные: `GP_*`, `PG_*`, `AIRFLOW_*`, `CSV_*`.
+- `make down` удаляет тома — предупреждайте студентов, что данные пропадут.
+
+## Для агента (особенности аудитории)
+- Пишите простыми словами. Добавляйте короткие комментарии к нетривиальной логике.
+- Избегайте больших рефакторингов и сложных паттернов — студенты только начинают.
+- Ошибки и логи — дружелюбные и понятные (лучше с подсказкой «что сделать дальше»).
+- Перед релевантными правками валидируйте локально: `make up && make airflow-init`, затем откройте DAG в UI и/или прогоните `make test`.
