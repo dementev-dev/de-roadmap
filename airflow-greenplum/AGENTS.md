@@ -17,6 +17,13 @@
 - `make down` — stop stack and remove volumes.
 Example: `make up && make airflow-init` then open `http://localhost:8080`.
 
+## Локальное Python-окружение
+- Окружением управляет `uv`: `uv python install 3.11` и `uv python pin 3.11` скачивают и фиксируют версию Python для проекта.
+- `uv sync` (или `make dev-setup` / `make dev-sync`) создаёт `.venv` и ставит dev-зависимости из `pyproject.toml` / `uv.lock`.
+- Команды разработчика: `make test`, `make lint`, `make fmt` (под капотом выполняются через `uv run`).
+- Не используем `pip install --user`; если пакеты попали в user-site, удаляем через `pip uninstall <package>` и проверяем `pip list --user`.
+- В IDE выбираем интерпретатор из `.venv` (`.venv\Scripts\python.exe` на Windows, `.venv/bin/python` на Linux/macOS).
+
 ## Coding Style & Naming Conventions
 - Python: PEP 8, 4-space indents, `snake_case` for functions/vars, DAG IDs lower_snake_case.
 - Imports: stdlib → third-party → local; prefer one module per line.
