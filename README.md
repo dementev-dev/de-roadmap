@@ -56,8 +56,11 @@ OBS Studio
 [Настройка записи экрана](https://docs.google.com/document/d/1qd8uRYlAaZp9c5zpvCVBOvYQCEukGHI9PEPjnjahI1k/)
 
 ### Git
-Книга: [Pro Git](https://git-scm.com/book/ru/v2) - указать главы для чтения
-[Курс работы с Git и GitLab - ЭФКО ЦПР | YouTube плейлист](https://www.youtube.com/playlist?list=PLbf8m52BvqlFlblJqQKPuEU26pwgqe7zK) - указать номера лекций для просмотра и повторения за лектором.
+- Книга: [Pro Git](https://git-scm.com/book/ru/v2) - указать главы для чтения
+- Сжатый, но емкий видеогайд: [GIT, GitHub, GitLab. Полный АКТУАЛЬНЫЙ гайд ЗА ПОЛТОРА ЧАСА. Без этого выгонят с работы - Youtube
+](https://www.youtube.com/watch?v=0Y-fneoUIO8)
+- [Курс работы с Git и GitLab - ЭФКО ЦПР | YouTube плейлист](https://www.youtube.com/playlist?list=PLbf8m52BvqlFlblJqQKPuEU26pwgqe7zK) - указать номера лекций для просмотра и повторения за лектором.
+
 Целевой уровень знания - понимание процесса GitFlow. Как создать ветку, влить изменения в другие ветки. Понимание, зачем.
 На собесах обычно не спрашивают, но нужно в работе.
 
