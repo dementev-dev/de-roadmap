@@ -58,10 +58,10 @@ OBS Studio
 ### Git
 - Сжатый, но емкий видеогайд: [GIT, GitHub, GitLab. Полный АКТУАЛЬНЫЙ гайд ЗА ПОЛТОРА ЧАСА. Без этого выгонят с работы - Youtube](https://www.youtube.com/watch?v=0Y-fneoUIO8)
 - Книга: [Pro Git](https://git-scm.com/book/ru/v2) - главы 
-    - 2. Основы Git
-    - 3. Ветвление в Git
-    - 5. Распределённый Git
-    - 6. GitHub
+    - 2 Основы Git
+    - 3 Ветвление в Git
+    - 5 Распределённый Git
+    - 6 GitHub
 - [Курс работы с Git и GitLab - ЭФКО ЦПР | YouTube плейлист](https://www.youtube.com/playlist?list=PLbf8m52BvqlFlblJqQKPuEU26pwgqe7zK)
 
 Целевой уровень знания - понимание процесса GitFlow. Как создать ветку, влить изменения в другие ветки. Понимание, зачем.
