@@ -68,7 +68,7 @@
   - [Real Python: OOP in Python (tutorial)](https://realpython.com/python3-object-oriented]
 - Jupyter Lab
   - [Блог Практикума: «Что такое Jupyter Notebook: как установить и открыть»](https://practicum.yandex.ru/blog/chto-takoe-jupyter-notebook/)
-  - Pandas
+- Pandas
   - [GeeksforGeeks: “Why Pandas is Used in Python”](https://www.geeksforgeeks.org/pandas/why-pandas-is-used-in-python/)
   - [Skillbox: «Для чего нужна библиотека Pandas»](https://skillbox.ru/media/code/rabotaem-s-pandas-osnovnye-ponyatiya-i-realnye-dannye/)
   - [Official: “10 minutes to pandas”](https://pandas.pydata.org/docs/user_guide/10min.html)
