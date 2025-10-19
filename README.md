@@ -68,6 +68,7 @@
   - [Real Python: OOP in Python (tutorial)](https://realpython.com/python3-object-oriented]
 - Jupyter Lab
   - [Блог Практикума: «Что такое Jupyter Notebook: как установить и открыть»](https://practicum.yandex.ru/blog/chto-takoe-jupyter-notebook/)
+  - Готовая реализация Jupyter Lab, включающая в себя Spark, в Docker: https://github.com/dementev-dev/jupyter-spark-docker
 - Pandas
   - [GeeksforGeeks: “Why Pandas is Used in Python”](https://www.geeksforgeeks.org/pandas/why-pandas-is-used-in-python/)
   - [Skillbox: «Для чего нужна библиотека Pandas»](https://skillbox.ru/media/code/rabotaem-s-pandas-osnovnye-ponyatiya-i-realnye-dannye/)
