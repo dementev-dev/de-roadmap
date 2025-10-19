@@ -58,9 +58,9 @@
 
 
 ## Python
-2 курса по Python - простой и расширенный
-- ["Поколение Python": курс для начинающих – Stepik](https://stepik.org/course/58852/info)
-- ["Поколение Python": курс для продвинутых – Stepik](https://stepik.org/course/68343/info)
+
+- Если совсем не знакомы с Python, начинаем с курса ["Поколение Python": курс для начинающих – Stepik](https://stepik.org/course/58852/info)
+- Изучаем глубже и "оттачиваем" live coding: ["Поколение Python": курс для продвинутых – Stepik](https://stepik.org/course/68343/info)
 - ООП
   - [Tproger: «ООП простыми словами»](https://tproger.ru/experts/oop-in-simple-words)
   - Введение в [ООП](https://metanit.com/python/tutorial/7.1.php)
