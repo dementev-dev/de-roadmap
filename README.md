@@ -66,13 +66,15 @@
   - Введение в [ООП](https://metanit.com/python/tutorial/7.1.php)
   - [Яндекс Учебник: «Объектная модель Python: классы, поля и методы»](https://education.yandex.ru/handbook/python/article/obuektnaya-model-python-klassy-polya-i-metody)
   - [Real Python: OOP in Python (tutorial)](https://realpython.com/python3-object-oriented]
-- Pandas
+- Jupyter Lab
+  - [Блог Практикума: «Что такое Jupyter Notebook: как установить и открыть»](https://practicum.yandex.ru/blog/chto-takoe-jupyter-notebook/)
+  - Pandas
   - [GeeksforGeeks: “Why Pandas is Used in Python”](https://www.geeksforgeeks.org/pandas/why-pandas-is-used-in-python/)
   - [Skillbox: «Для чего нужна библиотека Pandas»](https://skillbox.ru/media/code/rabotaem-s-pandas-osnovnye-ponyatiya-i-realnye-dannye/)
   - [Official: “10 minutes to pandas”](https://pandas.pydata.org/docs/user_guide/10min.html)
   - [Хабр (RUVDS): «Моя шпаргалка по pandas»](https://habr.com/ru/companies/ruvds/articles/494720/)
   - [Tproger: «Наглядная шпаргалка по операциям с DataFrame»](https://tproger.ru/articles/pandas-data-wrangling-cheatsheet)
-- Jupyter Lab
+
 
 Полезно, но дороговато и не обязательно: хорошее комбо SQL + Python: ["Поколение Python": профи + ООП + SQL – Stepik](https://stepik.org/course/233341/promo?search=7181036958)
 
