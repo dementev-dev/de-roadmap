@@ -220,12 +220,12 @@ dbt (data build tool) — инструмент для трансформации
     - Клон проекта [dementev_dev/sandbox_db_public-форк](https://gitflic.ru/project/dementev_dev/sandbox_db_public-fork)
 - [Индексы в БД - Youtube](https://www.youtube.com/watch?v=DyqtBiDrz3g)
 - [Spark + Iceberg in 1 Hour - Memory Tuning, Joins, Partition - Youtube](https://www.youtube.com/watch?v=3R-SLYK-P_0)
+- [Введение в устройство Parquet и Iceberg - habr](https://habr.com/ru/companies/vktech/articles/959398/)
 - [Введение в Apache Iceberg. Основы, архитектура, как работает?](https://ivan-shamaev.ru/apache-iceberg-tutorial-architecture-how-to-work/#__Apache_Iceberg-2)
 - [Алгоритмы: теория и практика. Методы – Stepik](https://stepik.org/course/217/info)
 - [Алгоритмы: теория и практика. Структуры данных – Stepik](https://stepik.org/course/1547/promo)
 - [Apache Hadoop для самых маленьких: HDFS, RACK-AWARENESS, репликация и Data Locality - Youtube](https://youtu.be/0fsY5bW2l84)
 - [■ Книга. Введение в Apache Kafka для системных аналитиков и проектировщиков интеграций](https://systems.education/kafka)
-- 
 
 ## Записи ОМ
 - [Как пройти собеседование на программиста | Ультимативный гайд с ‪@om_nazarov‬ - Youtube](https://www.youtube.com/watch?v=tzSdiYZ52kI)
