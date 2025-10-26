@@ -60,7 +60,14 @@
 ## Python
 
 - Если совсем не знакомы с Python, начинаем с курса ["Поколение Python": курс для начинающих – Stepik](https://stepik.org/course/58852/info)
-- Изучаем глубже и "оттачиваем" live coding: ["Поколение Python": курс для продвинутых – Stepik](https://stepik.org/course/68343/info)
+- Изучаем глубже и "оттачиваем" live coding: ["Поколение Python": курс для продвинутых – Stepik](https://stepik.org/course/68343/info
+- Продолжение "базы", спрашиваемой на собеседованиях, по Python: ["Поколение Python": курс для профессионалов](https://stepik.org/course/82541/promo). Курс очень полезный, но платный.
+- "Продвинутые" темы:
+  - [Полезные функции](https://pyneng.readthedocs.io/ru/latest/book/10_useful_functions/index.html)
+  - [Работа с файлами в формате CSV, JSON, YAML](https://pyneng.readthedocs.io/ru/latest/book/17_serialization/index.html)
+  - [Итераторы, итерируемые объекты и генераторы](https://pyneng.readthedocs.io/ru/latest/book/13_iterator_generator/index.html)
+  - [Декораторы Python: пошаговое руководство](https://habr.com/ru/companies/otus/articles/727590/)
+  - Работа с датой/временем: https://django.fun/docs/python/3.10/library/datetime/
 - ООП
   - [Tproger: «ООП простыми словами»](https://tproger.ru/experts/oop-in-simple-words)
   - Введение в [ООП](https://metanit.com/python/tutorial/7.1.php)
