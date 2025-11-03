@@ -233,6 +233,7 @@ dbt (data build tool) — инструмент для трансформации
 - [Алгоритмы: теория и практика. Структуры данных – Stepik](https://stepik.org/course/1547/promo)
 - [Apache Hadoop для самых маленьких: HDFS, RACK-AWARENESS, репликация и Data Locality - Youtube](https://youtu.be/0fsY5bW2l84)
 - [■ Книга. Введение в Apache Kafka для системных аналитиков и проектировщиков интеграций](https://systems.education/kafka)
+- [Перевод документации dbt на русский язык](https://docs.getdbt.tech/)
 
 ## Записи ОМ
 - [Как пройти собеседование на программиста | Ультимативный гайд с ‪@om_nazarov‬ - Youtube](https://www.youtube.com/watch?v=tzSdiYZ52kI)
