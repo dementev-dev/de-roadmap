@@ -86,18 +86,16 @@ erDiagram
 **Картинка-конвейер (эскиз)**:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph Sources[Источники]
-    A[CRM] -->|ingest| STG
-    B[Billing] -->|ingest| STG
-    C[E-comm] -->|ingest| STG
+    A[CRM] --> STG
+    B[Billing] --> STG
+    C[E-comm] --> STG
   end
-  STG[STG (Staging/Bronze)] --> ODS[ODS (Operational/Silver)]
-  ODS --> DDS[DDS (Integrated/Conformed)]
-  DDS --> DM[DM (Data Marts/Gold)]
-  DM --> BI[BI/Отчёты/Дашборды]
-  classDef layer fill:#eef,stroke:#555,stroke-width:1px;
-  class STG,ODS,DDS,DM,BI layer;
+  STG[STG<br/>Staging / Bronze] --> ODS[ODS<br/>Operational / Silver]
+  ODS --> DDS[DDS<br/>Integrated / Conformed]
+  DDS --> DM[DM<br/>Data Marts / Gold]
+  DM --> BI[BI / Отчёты / Дашборды]
 ```
 
 **Заглушки**:
@@ -161,8 +159,8 @@ erDiagram
 **Эскиз звезды: факт + измерения**:
 
 ```mermaid
-graph LR
-  F[fact_orders\n(order_id, date_key, customer_key, product_key, qty, amount)]
+flowchart LR
+  F[fact_orders<br/>order_id, date_key, customer_key, product_key, qty, amount]
   D1[dim_date] --> F
   D2[dim_customer] --> F
   D3[dim_product] --> F
@@ -185,28 +183,14 @@ graph LR
 **Эскиз DV:**
 
 ```mermaid
-graph LR
-  subgraph H[Hubs]
-    H_C[Hub_Customer\n(BK:customer_natural_key)]
-    H_P[Hub_Product\n(BK:product_code)]
-    H_O[Hub_Order\n(BK:order_number)]
-  end
-  subgraph L[Links]
-    L_OP[Link_OrderProduct\n(H_O,H_P)]
-    L_OC[Link_OrderCustomer\n(H_O,H_C)]
-  end
-  subgraph S[Satellites]
-    S_C[SAT_Customer\n(attrs, eff_from, eff_to)]
-    S_P[SAT_Product\n(attrs, eff_from, eff_to)]
-    S_O[SAT_Order\n(attrs, eff_from, eff_to)]
-  end
-  H_C --> S_C
-  H_P --> S_P
-  H_O --> S_O
-  H_O --> L_OP
-  H_P --> L_OP
-  H_O --> L_OC
-  H_C --> L_OC
+flowchart LR
+  HC[Hub_Customer] --> SC[SAT_Customer]
+  HP[Hub_Product] --> SP[SAT_Product]
+  HO[Hub_Order] --> SO[SAT_Order]
+  HO --> LOP[Link_OrderProduct]
+  HP --> LOP
+  HO --> LOC[Link_OrderCustomer]
+  HC --> LOC
 ```
 
 **TODO**: Raw Vault vs Business Vault, плюс/минус.
@@ -218,15 +202,17 @@ graph LR
 **Эскиз (упрощённый)**:
 
 ```mermaid
-graph LR
-  A_C[Anchor CUSTOMER]
-  K_CID[Knot CUSTOMER_ID (BK)]
-  A_C -- has --> K_CID
-  A_C -- attr --> C_NAME[Attribute NAME]
-  A_C -- attr --> C_EMAIL[Attribute EMAIL]
-  C_NAME -- history --> C_NAME_VAL[Value + timeline]
-  C_EMAIL -- history --> C_EMAIL_VAL[Value + timeline]
+flowchart LR
+  AC[Anchor CUSTOMER]
+  KC[Knot CUSTOMER_ID]
+  AC --> KC
+  AC --> AN[Attr NAME]
+  AC --> AE[Attr EMAIL]
+  AN --> NV[Name values history]
+  AE --> EV[Email values history]
 ```
+
+**TODO**: где уместно, порог входа.
 
 **TODO**: где уместно, порог входа.
 
