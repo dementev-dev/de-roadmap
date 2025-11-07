@@ -11,10 +11,13 @@ DELETE FROM stg.orders_raw;
 DELETE FROM stg.order_items_raw;
 DELETE FROM stg.products_raw;
 
-INSERT INTO stg.customers_raw (customer_id, email, phone, city) VALUES
-('101', 'a@ex.com', '700', 'Москва'),
-('101', 'b@ex.com', '700', 'Москва'),
-('102', 'c@ex.com', '701', 'СПб');
+-- STG (пример вставки с метками времени)
+INSERT INTO stg.customers_raw (_load_id, _load_ts, event_ts, customer_id, email, phone, city) VALUES
+('batch_20250405_0800', '2025-04-05 08:00', NULL,  '101','a@ex.com','700','Москва'),
+('batch_20250405_0800', '2025-04-05 08:00', NULL,  '102','c@ex.com','701','СПб'),
+('batch_20250405_1200', '2025-04-05 12:00', NULL,  '101','b@ex.com','700','Москва'),
+('batch_20250405_1800', '2025-04-05 18:00', NULL,  '101','b@ex.com','700','Санкт-Петербург');
+
 
 INSERT INTO stg.orders_raw (order_id, order_date, customer_id) VALUES
 ('5001', '2024-01-10', '101'),
@@ -39,7 +42,9 @@ SELECT
     customer_id::INT,
     NULLIF(TRIM(email), ''),
     NULLIF(TRIM(phone), ''),
-    NULLIF(TRIM(city), '')
+    NULLIF(TRIM(city), ''),
+    _load_id,
+    _load_ts
 FROM stg.customers_raw
 WHERE customer_id ~ '^\d+$';
 
@@ -107,53 +112,71 @@ INSERT INTO dds.dim_product (product_bk, product_name)
 SELECT product_id, name
 FROM ods.products;
 
--- 5. DDS: dim_customer — SCD Type 2 (упрощённая версия для обучения)
--- В продакшене — используем алгоритм «детектирования изменений + UPSERT»
--- Здесь: перестраиваем всю историю на основе STG (для детерминированности)
+-- 5. DDS: dim_customer — SCD Type 2
+-- Загрузка SCD2 (идемпотентный апсерт)
+-- Делаем внутри одной транзакции
 
-DELETE FROM dds.dim_customer;
-
-WITH ranked AS (
+BEGIN;
+    -- Подготовим дельту: по BK одна запись на «текущую истину» из ODS/STG
+    WITH src AS (
     SELECT
-        customer_id::INT AS customer_bk,
-        email,
-        phone,
-        city,
+        s.customer_id::INT                                AS customer_bk,
+        NULLIF(trim(s.email), '')                         AS email,
+        NULLIF(trim(s.phone), '')                         AS phone,
+        NULLIF(trim(s.city),  '')                         AS city,
+        COALESCE(s.event_ts, s._load_ts)::timestamp       AS eff_ts,
+        dds.customer_hash(s.email, s.phone, s.city)       AS hashdiff,
         ROW_NUMBER() OVER (
-            PARTITION BY customer_id 
-            ORDER BY _load_ts, email
+            PARTITION BY s.customer_id
+            ORDER BY COALESCE(s.event_ts, s._load_ts) DESC, s._load_ts DESC
         ) AS rn
-    FROM stg.customers_raw
-    WHERE customer_id ~ '^\d+$'
-),
-changes AS (
+    FROM stg.customers_raw s
+    WHERE s.customer_id ~ '^\d+$'
+    ),
+    delta AS (
+    -- берём по BK последнюю версию из поступивших данных
+    SELECT customer_bk, email, phone, city, hashdiff, eff_ts
+    FROM src
+    WHERE rn = 1
+    ),
+    -- Закрываем текущие версии там, где атрибуты изменились
+    expired AS (
+    UPDATE dds.dim_customer d
+        SET valid_to   = LEAST(d.valid_to, delta.eff_ts - INTERVAL '1 second'),
+            is_current = FALSE,
+            updated_at = NOW()
+    FROM delta
+    WHERE d.customer_bk = delta.customer_bk
+        AND d.is_current = TRUE
+        AND d.hashdiff  <> delta.hashdiff        -- изменение состава атрибутов
+        AND delta.eff_ts >= d.valid_from         -- не уходим «назад во времени»
+    RETURNING d.customer_bk
+    )
+    -- Вставляем новые текущие версии:
+    --  а) для новых BK (раньше не было строки)
+    --  б) для изменившихся BK (после закрытия предыдущей версии)
+    INSERT INTO dds.dim_customer (
+        customer_bk, email, phone, city, hashdiff,
+        valid_from, valid_to, is_current, created_at, updated_at
+    )
     SELECT
-        customer_bk,
-        email,
-        phone,
-        city,
-        -- Имитируем хронологию: +1 день на каждое изменение
-        '2023-01-01'::DATE + (rn - 1) * INTERVAL '1 day' AS eff_from
-    FROM ranked
-),
-final AS (
-    SELECT
-        customer_bk,
-        email,
-        phone,
-        city,
-        eff_from::DATE AS valid_from,
-        COALESCE(
-            LEAD(eff_from) OVER (PARTITION BY customer_bk ORDER BY eff_from) - INTERVAL '1 day',
-            '9999-12-31'::DATE
-        ) AS valid_to,
-        CASE WHEN LEAD(eff_from) OVER (PARTITION BY customer_b_k ORDER BY eff_from) IS NULL
-             THEN TRUE ELSE FALSE END AS is_current
-    FROM changes
-)
-INSERT INTO dds.dim_customer (customer_bk, email, phone, city, valid_from, valid_to, is_current)
-SELECT customer_bk, email, phone, city, valid_from, valid_to, is_current
-FROM final;
+        s.customer_bk, s.email, s.phone, s.city, s.hashdiff,
+        COALESCE(                               -- у новых BK открываем «историю с вечности»
+            -- если нужна «вечность» именно как TIMESTAMP-величина:
+            CASE WHEN d.customer_bk IS NULL THEN TIMESTAMP '1900-01-01' ELSE s.eff_ts END,
+            TIMESTAMP '1900-01-01'
+        )                    AS valid_from,
+        TIMESTAMP '9999-12-31'                  AS valid_to,
+        TRUE                                     AS is_current,
+        NOW(), NOW()
+    FROM delta s
+    LEFT JOIN dds.dim_customer d
+        ON d.customer_bk = s.customer_bk AND d.is_current = TRUE
+    WHERE d.customer_bk IS NULL               -- новый BK
+        OR d.hashdiff <> s.hashdiff            -- или изменившийся BK
+        ON CONFLICT (customer_bk, valid_from) DO NOTHING;
+    -- Конец транзакции
+COMMIT;
 
 -- 6. DDS: fact_sales — загрузка фактов с учётом SCD
 -- В продакшене — фильтруем по диапазону дат (инкрементально)

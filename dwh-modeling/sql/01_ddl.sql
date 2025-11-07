@@ -15,11 +15,12 @@ CREATE SCHEMA dds;
 
 -- 2. STG: сырые данные (как пришли)
 CREATE TABLE stg.customers_raw (
-    customer_id TEXT,
+    customer_id TEXT,                    -- может быть строкой или числом
     email       TEXT,
     phone       TEXT,
     city        TEXT,
-    _load_ts    TIMESTAMP DEFAULT NOW()
+    _load_id    TEXT,                    -- идентификатор загрузки (обязательно!)
+    _load_ts    TIMESTAMP DEFAULT NOW(), -- время получения в DWH
 );
 
 CREATE TABLE stg.orders_raw (
@@ -43,10 +44,12 @@ CREATE TABLE stg.products_raw (
 
 -- 3. ODS: очищенные данные
 CREATE TABLE ods.customers (
-    customer_id INT,
+    customer_id INT NOT NULL,      -- привели к INT
     email       VARCHAR(100),
     phone       VARCHAR(20),
-    city        VARCHAR(50)
+    city        VARCHAR(50),
+    _load_id    TEXT NOT NULL,     -- сохраняем для отладки и SCD
+    _load_ts    TIMESTAMP NOT NULL -- время загрузки (копия из STG)
 );
 
 CREATE TABLE ods.orders (
@@ -98,15 +101,26 @@ CREATE TABLE dds.dim_product (
 
 -- dim_customer: измерение "Клиент" с SCD Type 2
 CREATE TABLE dds.dim_customer (
-    customer_sk   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    customer_bk   INT NOT NULL,
-    email         VARCHAR(100),
-    phone         VARCHAR(20),
-    city          VARCHAR(50),
-    valid_from    DATE NOT NULL,
-    valid_to      DATE NOT NULL DEFAULT '9999-12-31',
-    is_current    BOOLEAN NOT NULL DEFAULT TRUE
+    customer_sk   BIGSERIAL PRIMARY KEY,
+    customer_bk   INT        NOT NULL,                -- бизнес-ключ
+    email         TEXT,
+    phone         TEXT,
+    city          TEXT,
+    hashdiff      TEXT        NOT NULL,               -- md5 по нормализованным атрибутам
+    valid_from    TIMESTAMP   NOT NULL,
+    valid_to      TIMESTAMP   NOT NULL,
+    is_current    BOOLEAN     NOT NULL DEFAULT TRUE,
+    created_at    TIMESTAMP   NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP   NOT NULL DEFAULT NOW()
 );
+
+-- одна версия на момент времени
+ALTER TABLE dds.dim_customer
+    ADD CONSTRAINT uq_dim_customer_bk_from UNIQUE (customer_bk, valid_from);    -- dim_product: измерение "
+
+-- ускорители
+CREATE INDEX ix_dim_customer_bk_current ON dds.dim_customer (customer_bk) WHERE is_current;
+CREATE INDEX ix_dim_customer_bk_from_to ON dds.dim_customer (customer_bk, valid_from, valid_to);
 
 -- fact_sales: факт "Продажи"
 CREATE TABLE dds.fact_sales (
@@ -123,3 +137,16 @@ ALTER TABLE dds.fact_sales
     ADD CONSTRAINT fk_fact_customer FOREIGN KEY (customer_sk) REFERENCES dds.dim_customer(customer_sk),
     ADD CONSTRAINT fk_fact_product  FOREIGN KEY (product_sk)  REFERENCES dds.dim_product(product_sk),
     ADD CONSTRAINT fk_fact_date     FOREIGN KEY (date_key)    REFERENCES dds.dim_date(date_key);
+
+
+-- Через md5 по нормализованным атрибутам
+CREATE OR REPLACE FUNCTION dds.customer_hash(email TEXT, phone TEXT, city TEXT)
+RETURNS TEXT LANGUAGE sql IMMUTABLE AS $$
+  SELECT md5(
+    concat_ws('||',
+      lower(coalesce(trim(email), '')),
+      lower(coalesce(trim(phone), '')),
+      lower(coalesce(trim(city),  ''))
+    )
+  );
+$$;
