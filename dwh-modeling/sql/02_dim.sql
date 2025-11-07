@@ -37,6 +37,14 @@ INSERT INTO stg.products_raw (product_id, name) VALUES
 
 TRUNCATE ods.customers, ods.orders, ods.order_items, ods.products;
 
+INSERT INTO ods.orders (order_id, order_date, customer_id)
+SELECT
+    order_id::INT,
+    TO_DATE(order_date, 'YYYY-MM-DD'),
+    customer_id::INT
+FROM stg.orders_raw
+WHERE order_date IS NOT NULL AND customer_id ~ '^\d+$';
+
 -- берём по BK самую позднюю запись (event_ts > _load_ts > _load_id)
 WITH src AS (
   SELECT
@@ -191,5 +199,5 @@ JOIN dds.dim_customer dc
 -- 7. Проверка — вывод итогов (не часть ETL, но полезно для отладки)
 -- В реальном пайплайне такие SELECT выносятся в отдельные скрипты или дашборды
 
--- SELECT 'dim_customer count = ' || COUNT(*) FROM dds.dim_customer;
--- SELECT 'fact_sales count = ' || COUNT(*) FROM dds.fact_sales;
+ SELECT 'dim_customer count = ' || COUNT(*) FROM dds.dim_customer WHERE is_current ;
+ SELECT 'fact_sales count = ' || COUNT(*) FROM dds.fact_sales;
