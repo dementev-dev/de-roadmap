@@ -37,25 +37,30 @@ INSERT INTO stg.products_raw (product_id, name) VALUES
 
 TRUNCATE ods.customers, ods.orders, ods.order_items, ods.products;
 
+-- берём по BK самую позднюю запись (event_ts > _load_ts > _load_id)
+WITH src AS (
+  SELECT
+      s.customer_id::INT                                     AS customer_id,
+      NULLIF(trim(s.email), '')                              AS email,
+      NULLIF(trim(s.phone), '')                              AS phone,
+      NULLIF(trim(s.city),  '')                              AS city,
+      NULLIF(s.event_ts, '')::timestamp                      AS event_ts,
+      s._load_id,
+      s._load_ts,
+      COALESCE(NULLIF(s.event_ts, '')::timestamp, s._load_ts,
+               to_timestamp(regexp_replace(s._load_id,'^batch_',''),'YYYYMMDD_HH24MI')) AS eff_ts
+  FROM stg.customers_raw s
+  WHERE s.customer_id ~ '^\d+$'
+),
+last_per_bk AS (
+  SELECT DISTINCT ON (customer_id)
+         customer_id, email, phone, city, event_ts, _load_id, _load_ts
+  FROM src
+  ORDER BY customer_id, eff_ts DESC, _load_ts DESC
+)
 INSERT INTO ods.customers (customer_id, email, phone, city, event_ts, _load_id, _load_ts)
-SELECT
-    customer_id::INT,
-    NULLIF(TRIM(email), ''),
-    NULLIF(TRIM(phone), ''),
-    NULLIF(TRIM(city), ''),
-    event_ts::timestamp,
-    _load_id,
-    _load_ts
-FROM stg.customers_raw
-WHERE customer_id ~ '^\d+$';
-
-INSERT INTO ods.orders (order_id, order_date, customer_id)
-SELECT
-    order_id::INT,
-    TO_DATE(order_date, 'YYYY-MM-DD'),
-    customer_id::INT
-FROM stg.orders_raw
-WHERE order_date IS NOT NULL AND customer_id ~ '^\d+$';
+SELECT customer_id, email, phone, city, event_ts, _load_id, _load_ts
+FROM last_per_bk;
 
 INSERT INTO ods.order_items (order_item_id, order_id, product_id, qty, price_at_sale)
 SELECT
@@ -113,75 +118,60 @@ INSERT INTO dds.dim_product (product_bk, product_name)
 SELECT product_id, name
 FROM ods.products;
 
--- 5. DDS: dim_customer — SCD Type 2
--- Загрузка SCD2 (идемпотентный апсерт)
--- Делаем внутри одной транзакции
+-- 5. DDS: dim_customer — первичная загрузка SCD2 (full backfill из STG)
+TRUNCATE dds.dim_customer, dds.fact_sales;
 
 BEGIN;
-    -- Подготовим дельту: по BK одна запись на «текущую истину» из ODS/STG
-    WITH src AS (
+  WITH src AS (
     SELECT
-        s.customer_id::INT                                AS customer_bk,
-        NULLIF(trim(s.email), '')                         AS email,
-        NULLIF(trim(s.phone), '')                         AS phone,
-        NULLIF(trim(s.city),  '')                         AS city,
-        COALESCE(s.event_ts, s._load_ts)::timestamp       AS eff_ts,
-        dds.customer_hash(s.email, s.phone, s.city)       AS hashdiff,
-        ROW_NUMBER() OVER (
-            PARTITION BY s.customer_id
-            ORDER BY COALESCE(s.event_ts, s._load_ts) DESC, s._load_ts DESC
-        ) AS rn
-    FROM ods.customers s
-    ),
-    delta AS (
-    -- берём по BK последнюю версию из поступивших данных
-    SELECT customer_bk, email, phone, city, hashdiff, eff_ts
+      s.customer_id::INT                                         AS customer_bk,
+      NULLIF(trim(s.email), '')                                   AS email,
+      NULLIF(trim(s.phone), '')                                   AS phone,
+      NULLIF(trim(s.city),  '')                                   AS city,
+      COALESCE(NULLIF(s.event_ts,'')::timestamp, s._load_ts,
+               to_timestamp(regexp_replace(s._load_id,'^batch_',''),'YYYYMMDD_HH24MI')) AS eff_ts,
+      dds.customer_hash(s.email, s.phone, s.city)                 AS hashdiff
+    FROM stg.customers_raw s
+    WHERE s.customer_id ~ '^\d+$'
+  ),
+  ordered AS (
+    SELECT *,
+           lag(hashdiff) OVER (PARTITION BY customer_bk ORDER BY eff_ts) AS prev_hash,
+           row_number()  OVER (PARTITION BY customer_bk ORDER BY eff_ts) AS rn
     FROM src
-    WHERE rn = 1
-    ),
-    -- Закрываем текущие версии там, где атрибуты изменились
-    expired AS (
-    UPDATE dds.dim_customer d
-        SET valid_to   = LEAST(d.valid_to, delta.eff_ts - INTERVAL '1 second'),
-            is_current = FALSE,
-            updated_at = NOW()
-    FROM delta
-    WHERE d.customer_bk = delta.customer_bk
-        AND d.is_current = TRUE
-        AND d.hashdiff  <> delta.hashdiff        -- изменение состава атрибутов
-        AND delta.eff_ts >= d.valid_from         -- не уходим «назад во времени»
-    RETURNING d.customer_bk
-    )
-    -- Вставляем новые текущие версии:
-    --  а) для новых BK (раньше не было строки)
-    --  б) для изменившихся BK (после закрытия предыдущей версии)
-    INSERT INTO dds.dim_customer (
-        customer_bk, email, phone, city, hashdiff,
-        valid_from, valid_to, is_current, created_at, updated_at
-    )
+  ),
+  changes AS (
+    -- только первые состояния и фактические изменения атрибутов
+    SELECT *
+    FROM ordered
+    WHERE prev_hash IS DISTINCT FROM hashdiff OR prev_hash IS NULL
+  ),
+  framed AS (
     SELECT
-        s.customer_bk, s.email, s.phone, s.city, s.hashdiff,
-        COALESCE(                               -- у новых BK открываем «историю с вечности»
-            -- если нужна «вечность» именно как TIMESTAMP-величина:
-            CASE WHEN d.customer_bk IS NULL THEN TIMESTAMP '1900-01-01' ELSE s.eff_ts END,
-            TIMESTAMP '1900-01-01'
-        )                    AS valid_from,
-        TIMESTAMP '9999-12-31'                  AS valid_to,
-        TRUE                                     AS is_current,
-        NOW(), NOW()
-    FROM delta s
-    LEFT JOIN dds.dim_customer d
-        ON d.customer_bk = s.customer_bk AND d.is_current = TRUE
-    WHERE d.customer_bk IS NULL               -- новый BK
-        OR d.hashdiff <> s.hashdiff            -- или изменившийся BK
-        ON CONFLICT (customer_bk, valid_from) DO NOTHING;
-    -- Конец транзакции
+      customer_bk, email, phone, city, hashdiff,
+      CASE WHEN rn = 1 THEN timestamp '1900-01-01' ELSE eff_ts END        AS valid_from,
+      lead(eff_ts) OVER (PARTITION BY customer_bk ORDER BY eff_ts)        AS next_ts
+    FROM changes
+  )
+  INSERT INTO dds.dim_customer (
+      customer_bk, email, phone, city, hashdiff,
+      valid_from,                                           valid_to,                       is_current,
+      created_at, updated_at
+  )
+  SELECT
+      customer_bk, email, phone, city, hashdiff,
+      valid_from,
+      COALESCE(next_ts - interval '1 second', timestamp '9999-12-31') AS valid_to,
+      (next_ts IS NULL)                                               AS is_current,
+      now(), now()
+  FROM framed
+  ORDER BY customer_bk, valid_from;
 COMMIT;
 
 -- 6. DDS: fact_sales — загрузка фактов с учётом SCD
 -- В продакшене — фильтруем по диапазону дат (инкрементально)
 
-DELETE FROM dds.fact_sales;
+--TRUNCATE dds.fact_sales;
 
 INSERT INTO dds.fact_sales (customer_sk, product_sk, date_key, quantity, amount)
 SELECT
