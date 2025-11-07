@@ -1,0 +1,4 @@
+order_item_id,order_id,product_id,qty,price_at_sale
+1,5001,9001,2,100.00
+2,5001,9002,1,50.00
+3,5002,9001,1,100.00

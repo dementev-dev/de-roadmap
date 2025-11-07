@@ -1,0 +1,4 @@
+customer_id,email,phone,city
+101,a@ex.com,700,Москва
+101,b@ex.com,700,Москва
+102,c@ex.com,701,СПб
