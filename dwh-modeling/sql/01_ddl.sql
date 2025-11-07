@@ -14,13 +14,15 @@ CREATE SCHEMA ods;
 CREATE SCHEMA dds;
 
 -- 2. STG: сырые данные (как пришли)
+DROP TABLE IF EXISTS stg.customers_raw;
 CREATE TABLE stg.customers_raw (
     customer_id TEXT,                    -- может быть строкой или числом
     email       TEXT,
     phone       TEXT,
     city        TEXT,
+    event_ts    TEXT,
     _load_id    TEXT,                    -- идентификатор загрузки (обязательно!)
-    _load_ts    TIMESTAMP DEFAULT NOW(), -- время получения в DWH
+    _load_ts    TIMESTAMP DEFAULT NOW() -- время получения в DWH
 );
 
 CREATE TABLE stg.orders_raw (
@@ -43,11 +45,13 @@ CREATE TABLE stg.products_raw (
 );
 
 -- 3. ODS: очищенные данные
+DROP TABLE IF EXISTS ods.customers;
 CREATE TABLE ods.customers (
     customer_id INT NOT NULL,      -- привели к INT
     email       VARCHAR(100),
     phone       VARCHAR(20),
     city        VARCHAR(50),
+    event_ts    TIMESTAMP,
     _load_id    TEXT NOT NULL,     -- сохраняем для отладки и SCD
     _load_ts    TIMESTAMP NOT NULL -- время загрузки (копия из STG)
 );

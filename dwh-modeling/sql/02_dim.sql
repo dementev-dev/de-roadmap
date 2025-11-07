@@ -37,12 +37,13 @@ INSERT INTO stg.products_raw (product_id, name) VALUES
 
 TRUNCATE ods.customers, ods.orders, ods.order_items, ods.products;
 
-INSERT INTO ods.customers (customer_id, email, phone, city)
+INSERT INTO ods.customers (customer_id, email, phone, city, event_ts, _load_id, _load_ts)
 SELECT
     customer_id::INT,
     NULLIF(TRIM(email), ''),
     NULLIF(TRIM(phone), ''),
     NULLIF(TRIM(city), ''),
+    event_ts::timestamp,
     _load_id,
     _load_ts
 FROM stg.customers_raw
@@ -81,7 +82,7 @@ DELETE FROM dds.dim_date;
 WITH RECURSIVE dates AS (
     SELECT DATE '2023-01-01' AS d
     UNION ALL
-    SELECT d + INTERVAL '1 day'
+    SELECT (d + INTERVAL '1 day')::DATE  -- ← приведение к DATE
     FROM dates
     WHERE d + INTERVAL '1 day' <= DATE '2027-12-31'
 )
@@ -96,7 +97,7 @@ SELECT
     EXTRACT(QUARTER FROM d)::SMALLINT,
     EXTRACT(MONTH FROM d)::SMALLINT,
     EXTRACT(DAY FROM d)::SMALLINT,
-    TO_CHAR(d, 'Day'),
+    TRIM(TO_CHAR(d, 'Day')),  -- ← TRIM — убрать trailing space
     EXTRACT(DOW FROM d)::SMALLINT,
     d BETWEEN DATE_TRUNC('month', d) 
           AND DATE_TRUNC('month', d) + INTERVAL '1 month' - INTERVAL '1 day'
@@ -130,8 +131,7 @@ BEGIN;
             PARTITION BY s.customer_id
             ORDER BY COALESCE(s.event_ts, s._load_ts) DESC, s._load_ts DESC
         ) AS rn
-    FROM stg.customers_raw s
-    WHERE s.customer_id ~ '^\d+$'
+    FROM ods.customers s
     ),
     delta AS (
     -- берём по BK последнюю версию из поступивших данных
@@ -192,11 +192,11 @@ SELECT
     oi.price_at_sale * oi.qty
 FROM ods.orders o
 JOIN ods.order_items oi ON o.order_id = oi.order_id
-JOIN ods.products p ON oi.product_id = p.product_id
+JOIN ods.products p     ON oi.product_id = p.product_id
 JOIN dds.dim_product dp ON p.product_id = dp.product_bk
-JOIN dds.dim_customer dc 
-    ON o.customer_id = dc.customer_bk
-    AND o.order_date BETWEEN dc.valid_from AND dc.valid_to;
+JOIN dds.dim_customer dc
+  ON o.customer_id = dc.customer_bk
+ AND o.order_date::timestamp BETWEEN dc.valid_from AND dc.valid_to;
 
 -- 7. Проверка — вывод итогов (не часть ETL, но полезно для отладки)
 -- В реальном пайплайне такие SELECT выносятся в отдельные скрипты или дашборды
