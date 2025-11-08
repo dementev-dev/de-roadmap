@@ -56,7 +56,8 @@ WITH src AS (
       s._load_id,
       s._load_ts,
       COALESCE(NULLIF(s.event_ts, '')::timestamp, s._load_ts,
-               to_timestamp(regexp_replace(s._load_id,'^batch_',''),'YYYYMMDD_HH24MI')) AS eff_ts
+               to_timestamp(regexp_replace(s._load_id,'^batch_',''),'YYYYMMDD_HH24MI'))
+          AS eff_ts
   FROM stg.customers_raw s
   WHERE s.customer_id ~ '^\d+$'
 ),
