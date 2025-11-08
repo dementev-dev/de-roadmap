@@ -519,13 +519,13 @@ quadrantChart
 
 ### **Этапы сборки**
 
-1. Из STG → ODS:  
+1. Из STG → ODS:
    - `stg.orders_raw` → `ods.orders` (привели `order_date` к `DATE`);
-2. Из ODS → DDS:  
-   - `ods.customers` → `dds.dim_customer` (SCD Type 2);  
-   - `ods.products` → `dds.dim_product`;  
+2. Из ODS → DDS:
+   - `ods.customers` → `dds.dim_customer` (SCD Type 2);
+   - `ods.products` → `dds.dim_product`;
    - `ods.orders` + `ods.order_items` → `dds.fact_sales`;
-3. Из DDS → DM:  
+3. Из DDS → DM:
    - `fact_sales` + `dim_*` → `mart_daily_sales`.
 
 ```mermaid
@@ -539,6 +539,17 @@ flowchart LR
     DM --> BI[Power BI]
 ```
 
+### **Готовые SQL-скрипты**
+
+Все необходимые скрипты для построения хранилища находятся в папке [`sql/`](dwh-modeling/sql/)):
+
+- [`01_ddl_stg-dds.sql`](dwh-modeling/sql/01_ddl_stg-dds.sql) — создание схем и таблиц (STG, ODS, DDS)
+- [`02_dml_stg-dds.sql`](dwh-modeling/sql/02_dml_stg-dds.sql) — загрузка данных и трансформация
+- [`03_demo_increment.sql`](dwh-modeling/sql/03_demo_increment.sql) — инкрементальная загрузка и SCD2
+- [`04_validation.sql`](dwh-modeling/sql/04_validation.sql) — проверки качества данных
+- [`05_ddl_dm.sql`](dwh-modeling/sql/05_ddl_dm.sql) — создание витрин (Data Marts)
+- [`06_dml_dm.sql`](dwh-modeling/sql/06_dml_dm.sql) — наполнение витрин данными
+
 ### **Пример SQL-запроса для витрины**
 
 ```sql
@@ -551,11 +562,11 @@ SELECT
     SUM(f.quantity) AS total_qty,
     SUM(f.amount) AS total_revenue
 FROM dds.fact_sales f
-JOIN dds.dim_date d 
+JOIN dds.dim_date d
   ON f.date_key = d.date_key
-JOIN dds.dim_product p 
+JOIN dds.dim_product p
   ON f.product_sk = p.product_sk
-JOIN dds.dim_customer c 
+JOIN dds.dim_customer c
   ON f.customer_sk = c.customer_sk
   AND f.order_date BETWEEN c.valid_from AND c.valid_to  -- SCD!
 WHERE c.is_current = true  -- или не фильтровать — тогда будет история
@@ -747,9 +758,9 @@ SELECT 'OK' WHERE EXISTS (
 
 ## **ЧАСТЬ C. Мини-датасет (для практики)**
 
-Положите эти файлы в папку `data/` — и тренируйтесь:
+Все данные для практики находятся в папке [`data/`](dwh-modeling/data/)) — тренируйтесь:
 
-**`customers.csv`**
+[**`customers.csv`**](dwh-modeling/data/customers.csv)):
 ```csv
 customer_id,email,phone,city
 101,a@ex.com,700,Москва
@@ -757,14 +768,14 @@ customer_id,email,phone,city
 102,c@ex.com,701,СПб
 ```
 
-**`orders.csv`**
+[**`orders.csv`**](dwh-modeling/data/orders.csv)):
 ```csv
 order_id,order_date,customer_id
 5001,2024-01-10,101
 5002,2024-02-05,102
 ```
 
-**`order_items.csv`**
+[**`order_items.csv`**](dwh-modeling/data/order_items.csv)):
 ```csv
 order_item_id,order_id,product_id,qty,price_at_sale
 1,5001,9001,2,100.00
@@ -772,25 +783,29 @@ order_item_id,order_id,product_id,qty,price_at_sale
 3,5002,9001,1,100.00
 ```
 
-**`products.csv`**
+[**`products.csv`**](dwh-modeling/data/products.csv)):
 ```csv
 product_id,name
 9001,Phone
 9002,Case
 ```
 
-**`prices.csv`**
+[**`prices.csv`**](dwh-modeling/data/prices.csv)):
 ```csv
 product_id,valid_from,valid_to,price
 9001,2023-12-01,2024-01-31,100
 9001,2024-02-01,2999-12-31,110
 ```
 
-> 📂 Примеры DDL, SQL-загрузки, SCD-скрипты — в [GitHub-репозитории к статье](https://github.com/dementev-dev/de-roadmap/).
+>  📂 Все SQL-скрипты для построения хранилища находятся в папке [`sql/`](dwh-modeling/sql/)).
 
 ---
 
 ## **ЧАСТЬ D. DDL-скелеты (PostgreSQL)**
+
+Полные DDL-скрипты для всех слоёв хранилища находятся в файле [`01_ddl_stg-dds.sql`](dwh-modeling/sql/01_ddl_stg-dds.sql).
+
+Пример структуры основных таблиц DDS:
 
 ```sql
 -- DDS: измерение клиента (SCD Type 2)
