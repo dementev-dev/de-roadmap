@@ -52,8 +52,9 @@
 Материалы:
 - [Яндекс Практикум: что такое нормализация, простыми словами (для самых начинающих)](https://practicum.yandex.ru/blog/chto-takoe-normalizaciya-dannyh/)
 - [Базы данных. 1,2,3 нормальные формы. - Youtube](https://www.youtube.com/watch?v=zwQzL80U51c)
-- Краткая теория про [DWH](https://halltape.github.io/HalltapeRoadmapDE/DWH/)
+- [Введение в структуру хранилища данных](dwh-modeling/README.md)
 - Теория про Slowly Changing Dimensions: [SCD](dwh-modeling/SCD.md)
+- Краткая теория про [DWH](https://halltape.github.io/HalltapeRoadmapDE/DWH/) - повторим еще раз, в другом изложении
 - Хорошее общее введение в модели данных дано в статье и докладе от Yandex: [Как мы внедрили свою модель хранения данных — highly Normalized hybrid Model. Доклад Яндекса](https://habr.com/ru/companies/yandex/articles/557140/)
 
 
