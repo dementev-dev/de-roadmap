@@ -475,14 +475,38 @@ quadrantChart
    - `fact_sales` + `dim_*` → `mart_daily_sales`.
 
 ```mermaid
-flowchart LR
-    STG[stg.orders_raw] --> ODS[ods.orders]
-    ODS --> DDS[dds.fact_sales]
-    dds.dim_customer --> DDS
-    dds.dim_product --> DDS
-    dds.dim_date --> DDS
-    DDS --> DM[mart_daily_sales]
-    DM --> BI[Power BI]
+flowchart TD
+    %% STG
+    STG_PROD[stg.products_raw]
+    STG_CUST[stg.customers_raw]
+    STG_ORD[stg.orders_raw]
+    STG_ITEMS[stg.order_items_raw]
+
+    %% ODS
+    ODS_PROD[ods.products]
+    ODS_CUST[ods.customers]
+    ODS_ORD[ods.orders]
+    ODS_ITEMS[ods.order_items]
+
+    %% DDS
+    DIM_PROD[dds.dim_product]
+    DIM_CUST[dds.dim_customer]
+    DIM_DATE[dds.dim_date]
+    FACT_SALES[dds.fact_sales]
+
+    %% DM / BI
+    DM_SALES[dm.mart_daily_sales]
+    BI[BI / Power BI]
+
+    %% Потоки данных
+    STG_PROD --> ODS_PROD --> DIM_PROD --> DM_SALES
+    STG_CUST --> ODS_CUST --> DIM_CUST --> DM_SALES
+
+    STG_ORD --> ODS_ORD --> FACT_SALES --> DM_SALES
+    STG_ITEMS --> ODS_ITEMS --> FACT_SALES
+    DIM_DATE --> FACT_SALES
+
+    DM_SALES --> BI
 ```
 
 ### **Готовые SQL-скрипты**
