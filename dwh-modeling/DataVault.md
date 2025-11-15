@@ -286,37 +286,140 @@ Business Vault (BV) — следующий слой над Raw DV:
 
 #### 5.2.1. PIT-таблицы (Point-in-Time)
 
-PIT (Point-in-Time) отвечает на вопрос:
+PIT (Point-in-Time) решает очень конкретную боль:
 
-> Как объект выглядел на дату X?
+> «Покажи, как объект выглядел **на дату X**, но так, чтобы запрос был простым».
 
-Вместо того чтобы каждый раз писать сложные запросы с диапазонами `valid_from` / `valid_to`, мы заранее готовим таблицу с нужными ссылками на версии сателлитов.
+Если у нас есть несколько сателлитов с историей (например, `sat_customer_info`, `sat_customer_segment`, `sat_customer_risk`), то без PIT любой запрос превращается в пачку условий
+`BETWEEN valid_from AND valid_to` или оконных функций.
 
-Простейший эскиз:
+**Идея PIT:**
+
+Мы заранее считаем «словарь» вида:
+
+> для каждой пары (объект, дата) — какие версии сателлитов на эту дату актуальны.
+
+Упрощённый пример структуры:
 
 ```sql
 CREATE TABLE pit_customer_daily (
     hk_customer     BYTEA,
     as_of_date      DATE,
-    hk_sat_info     BYTEA,  -- ссылка на нужную версию sat_customer_info
-    hk_sat_segment  BYTEA,  -- ссылка на нужную версию sat_customer_segment
+    hk_sat_info     BYTEA,  -- sat_customer_info на эту дату
+    hk_sat_segment  BYTEA,  -- sat_customer_segment на эту дату
     load_dttm       TIMESTAMP
 );
 ```
 
-Теперь, чтобы собрать витрину продаж, достаточно один раз присоединить PIT по дате.
+Внутри логически это выглядит так:
+
+| hk_customer | as_of_date | hk_sat_info  | hk_sat_segment |
+| ----------- | ---------- | ------------ | -------------- |
+| 101         | 2023-06-10 | hash_info_v1 | hash_seg_v1    |
+| 101         | 2023-06-11 | hash_info_v2 | hash_seg_v1    |
+| 101         | 2023-06-12 | hash_info_v2 | hash_seg_v2    |
+
+Дальше витрина продаж вместо сложных `BETWEEN` делает простой JOIN:
+
+```sql
+SELECT
+    s.sale_date,
+    s.amount,
+    seg.segment,
+    info.city
+FROM fact_sales s
+JOIN pit_customer_daily pit
+  ON pit.hk_customer = s.hk_customer
+ AND pit.as_of_date  = s.sale_date
+JOIN sat_customer_segment seg
+  ON seg.hk_customer = pit.hk_customer
+ AND seg.hashdiff    = pit.hk_sat_segment
+JOIN sat_customer_info info
+  ON info.hk_customer = pit.hk_customer
+ AND info.hashdiff    = pit.hk_sat_info;
+```
+
+Мы **один раз** дорого посчитали PIT (по расписанию),
+и дальше все витрины просто используют эту «справочную таблицу».
+
+Коротко: **PIT — это таблица, где заранее записано, какая версия данных была актуальна на дату X.**
 
 #### 5.2.2. Bridge-таблицы
 
-Bridge-таблицы помогают проходить по сложным цепочкам связей:
+Bridge-таблицы отвечают на другой вопрос:
 
-* от клиента ко всем его договорам;
-* от договора ко всем счетам;
-* от счёта ко всем транзакциям.
+> «Какие объекты **в итоге** связаны между собой через длинную цепочку Links?»
 
-Вместо того чтобы каждый раз писать длинный JOIN по нескольким Links, мы один раз строим Bridge и далее используем его как предрасчитанный путь.
+В Data Vault связь между двумя сущностями редко бывает «одним JOIN’ом». Чаще это цепочка:
 
-#### 5.2.3. Business-правила и derived-таблицы
+* клиент → договор → счёт → карта → транзакция;
+* подразделение → филиал → торговая точка → чек;
+* компания → дочерняя компания → проект → контракт → платёж.
+
+Если каждый раз в витринах писать все эти JOIN’ы, запросы становятся:
+
+* длинными и хрупкими;
+* плохо читаемыми;
+* дублируются во множестве отчётов.
+
+**Идея Bridge:**
+
+Сделать отдельную таблицу, где заранее развернуть «финальные» пары:
+
+```sql
+CREATE TABLE bridge_customer_trx (
+    hk_customer  BYTEA,
+    hk_trx       BYTEA
+    -- опционально: даты действия связи, тип связи и т.п.
+);
+```
+
+Такую таблицу мы считаем **в ETL**, один раз по расписанию, а не в каждом запросе.
+Условный псевдокод построения:
+
+```sql
+INSERT INTO bridge_customer_trx (hk_customer, hk_trx)
+SELECT DISTINCT
+    c.hk_customer,
+    t.hk_trx
+FROM hub_customer c
+JOIN link_customer_contract lcc    ON lcc.hk_customer = c.hk_customer
+JOIN hub_contract ct               ON ct.hk_contract = lcc.hk_contract
+JOIN link_contract_account lca     ON lca.hk_contract = ct.hk_contract
+JOIN hub_account acc               ON acc.hk_account = lca.hk_account
+JOIN link_account_card lac         ON lac.hk_account = acc.hk_account
+JOIN hub_card card                 ON card.hk_card = lac.hk_card
+JOIN link_card_trx lct             ON lct.hk_card = card.hk_card
+JOIN hub_trx t                     ON t.hk_trx = lct.hk_trx;
+```
+
+После этого витрина может использовать уже готовый Bridge:
+
+```sql
+SELECT
+    c.customer_bk,
+    SUM(t.amount) AS total_amount
+FROM hub_customer c
+JOIN bridge_customer_trx bct
+  ON bct.hk_customer = c.hk_customer
+JOIN hub_trx t
+  ON t.hk_trx = bct.hk_trx
+WHERE t.trx_date >= CURRENT_DATE - INTERVAL '30 day'
+GROUP BY c.customer_bk;
+```
+
+Сложный путь по Links мы спрятали внутрь bridge‑таблицы,
+а витрины работают с простой связкой «клиент ↔ транзакция».
+
+Коротко:
+
+* **PIT** — про «какая версия атрибутов была на дату X»;
+* **Bridge** — про «какие объекты в итоге связаны друг с другом по длинному маршруту».
+
+Bridge — это **не обязательный элемент DV**, а инструмент оптимизации.
+Он нужен тогда, когда цепочки Links становятся длинными и повторяются во многих отчётах.
+
+#### 5.2.3. Business-правила и derived-таблицы Business-правила и derived-таблицы
 
 В BV логично размещать бизнес-логику, которая:
 
