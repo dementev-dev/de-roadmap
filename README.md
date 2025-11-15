@@ -61,6 +61,7 @@
   - Статья [«Что такое Data Vault: моделирование КХД для архитектора Big Data»](https://bigdataschool.ru/blog/what-is-data-vault/) — обзор, плюсы/минусы, контекст применения.
   - [Гибкие методологии проектирования Data Vault и Anchor Modeling | Евгений Ермаков | karpov.courses](https://www.youtube.com/watch?v=fNGIOb8SJvU)
   - Лекция в рамках курса по DWH: именно [«Основы Data Vault, создаем первую модель»](https://www.youtube.com/watch?v=65b99XCuiR4) — хороший формат: теория + пример.
+  - Доклад - практический пример: [Денис Лукьянов — Data Vault 2.0. Когда внедрять, проблемы применения при построении DWH на Greenplum](https://www.youtube.com/watch?v=oGwQbeP5iss)
 - Краткая теория про [DWH](https://halltape.github.io/HalltapeRoadmapDE/DWH/) - повторим еще раз, в другом изложении
 - Хорошее общее введение в модели данных дано в статье и докладе от Yandex: [Как мы внедрили свою модель хранения данных — highly Normalized hybrid Model. Доклад Яндекса](https://habr.com/ru/companies/yandex/articles/557140/)
 
