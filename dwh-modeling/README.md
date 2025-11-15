@@ -559,12 +559,12 @@ flowchart LR
 
 Все необходимые скрипты для построения хранилища находятся в папке [`sql/`](dwh-modeling/sql/):
 
-- [`01_ddl_stg-dds.sql`](dwh-modeling/sql/01_ddl_stg-dds.sql) — создание схем и таблиц (STG, ODS, DDS)
-- [`02_dml_stg-dds.sql`](dwh-modeling/sql/02_dml_stg-dds.sql) — загрузка данных и трансформация
-- [`03_demo_increment.sql`](dwh-modeling/sql/03_demo_increment.sql) — инкрементальная загрузка и SCD2
-- [`04_validation.sql`](dwh-modeling/sql/04_validation.sql) — проверки качества данных
-- [`05_ddl_dm.sql`](dwh-modeling/sql/05_ddl_dm.sql) — создание витрин (Data Marts)
-- [`06_dml_dm.sql`](dwh-modeling/sql/06_dml_dm.sql) — наполнение витрин данными
+- [`01_ddl_stg-dds.sql`](sql/01_ddl_stg-dds.sql) — создание схем и таблиц (STG, ODS, DDS)
+- [`02_dml_stg-dds.sql`](sql/02_dml_stg-dds.sql) — загрузка данных и трансформация
+- [`03_demo_increment.sql`](sql/03_demo_increment.sql) — инкрементальная загрузка и SCD2
+- [`04_validation.sql`](sql/04_validation.sql) — проверки качества данных
+- [`05_ddl_dm.sql`](sql/05_ddl_dm.sql) — создание витрин (Data Marts)
+- [`06_dml_dm.sql`](sql/06_dml_dm.sql) — наполнение витрин данными
 
 ### **Пример SQL-запроса для витрины**
 
