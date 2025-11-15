@@ -54,6 +54,13 @@
 - [Базы данных. 1,2,3 нормальные формы. - Youtube](https://www.youtube.com/watch?v=zwQzL80U51c)
 - [Введение в структуру хранилища данных](dwh-modeling/README.md)
 - Теория про Slowly Changing Dimensions: [SCD](dwh-modeling/SCD.md)
+- Еще про Data Vault:
+  - [Введение в Data Vault - Хабр](https://habr.com/ru/articles/348188/)
+  - [Основы Data Vault - Хабр](https://habr.com/ru/articles/502968/)
+  - [DataVault за 10 минут - Youtube](https://www.youtube.com/watch?v=9oQs_wJ045I)
+  - Статья [«Что такое Data Vault: моделирование КХД для архитектора Big Data»](https://bigdataschool.ru/blog/what-is-data-vault/) — обзор, плюсы/минусы, контекст применения.
+  - [Гибкие методологии проектирования Data Vault и Anchor Modeling | Евгений Ермаков | karpov.courses](https://www.youtube.com/watch?v=fNGIOb8SJvU)
+  - Лекция в рамках курса по DWH: именно [«Основы Data Vault, создаем первую модель»](https://www.youtube.com/watch?v=65b99XCuiR4) — хороший формат: теория + пример.
 - Краткая теория про [DWH](https://halltape.github.io/HalltapeRoadmapDE/DWH/) - повторим еще раз, в другом изложении
 - Хорошее общее введение в модели данных дано в статье и докладе от Yandex: [Как мы внедрили свою модель хранения данных — highly Normalized hybrid Model. Доклад Яндекса](https://habr.com/ru/companies/yandex/articles/557140/)
 
@@ -61,7 +68,7 @@
 ## Python
 
 - Если совсем не знакомы с Python, начинаем с курса ["Поколение Python": курс для начинающих – Stepik](https://stepik.org/course/58852/info)
-- Изучаем глубже и "оттачиваем" live coding: ["Поколение Python": курс для продвинутых – Stepik](https://stepik.org/course/68343/info
+- Изучаем глубже и "оттачиваем" live coding: ["Поколение Python": курс для продвинутых – Stepik](https://stepik.org/course/68343/info)
 - Продолжение "базы", спрашиваемой на собеседованиях, по Python: ["Поколение Python": курс для профессионалов](https://stepik.org/course/82541/promo). Курс очень полезный, но платный.
 - "Продвинутые" темы:
   - [Полезные функции](https://pyneng.readthedocs.io/ru/latest/book/10_useful_functions/index.html)
