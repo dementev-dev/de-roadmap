@@ -208,23 +208,39 @@ erDiagram
     dim_customer ||--o{ fact_sales : "клиент" 
     dim_product ||--o{ fact_sales : "товар"
     
+    dim_date {
+        int    date_key PK        "YYYYMMDD"
+        date   calendar_date      "сама дата"
+        int    year
+        int    month
+        int    day
+        varchar dow               "день недели"
+    }
+    
     dim_customer {
-        bigint customer_sk PK "суррогатный ключ"
-        varchar customer_bk "бизнес-ключ, напр. '101'"
+        bigint  customer_sk PK    "суррогатный ключ"
+        varchar customer_bk       "бизнес-ключ, напр. '101'"
         varchar customer_name
         varchar email
         varchar city
-        date valid_from
-        date valid_to
-        boolean is_current
+        date    valid_from        "SCD2: с какой даты запись актуальна"
+        date    valid_to          "SCD2: по какую дату актуальна"
+        boolean is_current        "SCD2: текущая версия?"
+    }
+    
+    dim_product {
+        bigint  product_sk PK
+        varchar product_bk        "код товара / артикул"
+        varchar product_name
+        varchar category
     }
     
     fact_sales {
-        bigint sale_id PK
-        bigint customer_sk FK
-        bigint product_sk FK
-        int date_key FK "ссылка на dim_date.date_key"
-        int quantity
+        bigint  sale_id PK
+        int     date_key FK       "ссылка на dim_date.date_key"
+        bigint  customer_sk FK
+        bigint  product_sk FK
+        int     quantity
         decimal amount
     }
 ```
