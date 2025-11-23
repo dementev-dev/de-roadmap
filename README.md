@@ -1,20 +1,45 @@
+# О роадмапе
+
+Этот роадмап — конспект моих подходов к обучению Data Engineering.  
+Он подойдёт тем, кто хочет:
+- системно войти в профессию с нуля или близкого к нулю уровня;
+- закрыть пробелы в базе (SQL, Git, Python, DWH, Airflow, GreenPlum);
+- подготовиться к собеседованиям и первым рабочим задачам.
+
+Роадмап можно проходить самостоятельно или вместе со мной в формате менторства.  
+Если хотите идти с поддержкой ментора — напишите в Telegram: [@dementev_dev](https://t.me/dementev_dev).
+
+## Оглавление
+
+- [Основные знания](#основные-знания)
+- [Практика и инструменты](#практика-и-инструменты)
+- [Карьера и менторство](#карьера-и-менторство)
+- [Расширенные навыки](#расширенные-навыки)
+- [Софт скиллы](#софт-скиллы)
+- [Дополнительные материалы](#дополнительные-материалы)
+
+Рекомендуемый способ использования:
+- двигаться по разделам последовательно, не перепрыгивая через базу;
+- выполнять практику и домашки, а не только смотреть материалы;
+- возвращаться к разделам по мере появления реальных задач.
+
 # Основные знания
 
-> Этот роадмап можно проходить самостоятельно или вместе со мной в формате менторства.  
-> Если хотите идти с поддержкой ментора — напишите в Telegram: [@dementev_dev](https://t.me/dementev_dev).
+## Git и базовые инструменты
 
-## База по Git
+### База по Git
 Что такое контроль версий, когда используется, ПОЧЕМУ и как мы в обучении будем использовать.
 Как создать репозиторий на GitHub, сохранять в нем изменения.
 - [Что такое Git для Начинающих / GitHub за 30 минут / Git Уроки - Youtube](https://www.youtube.com/watch?v=VJm_AjiTEEc)
 - Книга [Pro Git](https://git-scm.com/book/ru/v2) - читать главу 1
 
-Основы Markdown
+### Основы Markdown
 - [Язык Markdown и файл README | Git и GitHub для начинающих - Youtube](https://www.youtube.com/watch?v=8lEDTrr-G4U)
 - [Markdown и его возможности: простой способ оформления текста](https://kurshub.ru/journal/blog/markdown-chto-eto/)
 - [Синтаксис Markdown: подробная шпаргалка для веб-разработчиков / Skillbox Media](https://skillbox.ru/media/code/yazyk-razmetki-markdown-shpargalka-po-sintaksisu-s-primerami/)
 
 Домашки по остальным темам тренируемся делать в Git, там же пишем документацию.
+
 ## SQL
 ### База по SQL
 Книга: [PostgreSQL. Основы языка SQL](https://postgrespro.ru/education/books/sqlprimer) - Глава 1 "Введение в базы данных и SQL" + ДЗ
@@ -101,11 +126,8 @@
 Цель - LiveCoding простых задач Python, далее нужно будет для создания DAG Airflow
 
 ## Технические навыки
-### Запись встреч
-OBS Studio
-[Настройка записи экрана](https://docs.google.com/document/d/1qd8uRYlAaZp9c5zpvCVBOvYQCEukGHI9PEPjnjahI1k/)
 
-### Git
+### Продвинутый Git
 - Сжатый, но емкий видеогайд: [GIT, GitHub, GitLab. Полный АКТУАЛЬНЫЙ гайд ЗА ПОЛТОРА ЧАСА. Без этого выгонят с работы - Youtube](https://www.youtube.com/watch?v=0Y-fneoUIO8)
 - Книга: [Pro Git](https://git-scm.com/book/ru/v2) - главы 
     - 2 Основы Git
@@ -131,6 +153,12 @@ OBS Studio
 
 Понимание этих концепций помогает быстрее адаптироваться в новых проектах и правильно интерпретировать требования.
 
+### Запись встреч
+OBS Studio
+[Настройка записи экрана](https://docs.google.com/document/d/1qd8uRYlAaZp9c5zpvCVBOvYQCEukGHI9PEPjnjahI1k/)
+
+# Практика и инструменты
+
 ## Airflow
 Apache Airflow — инструмент для оркестрации ETL-процессов.
 
@@ -143,11 +171,26 @@ Apache Airflow — инструмент для оркестрации ETL-про
 - [Учебник по Airflow](https://github.com/dementev-dev/airflow-manual)
 
 
+## Greenplum
+Разбираем, чем Greenplum отличается от PostgreSQL и зачем нужны MPP-хранилища.
+
+Предварительно:
+- Простое введение: [Greenplum | Что это такое и как оно работает? - Youtube](https://www.youtube.com/watch?v=rLG9Z_HcKPY)
+- Оно же, но текстом: https://halltape.github.io/HalltapeRoadmapDE/GREENPLUM/
+- [Визуализатор распределения Greenplum](https://gpskew.rzvde.pro/)
+- Бесплатный, но большой учебный курс от Yandex: https://yandex.cloud/ru/training/greenplum
+- [Учебный курс по Greenplum от datafiner](https://datafinder.ru/products/uchebnyy-kurs-po-greenplum) — взять только отдельные главы.
+
+Практика (минимум, чтобы уверенно чувствовать себя на собеседованиях): 
+- [DE Starter Kit — Airflow + Greenplum + CSV](https://github.com/dementev-dev/airflow-greenplum)
+
+Сложные варианты с виртуалками — только если менти сильно захочет, в базовый путь не включаем.
+
 ## Курсовая работа
 ### Стенд в Docker Compose 
 - Apache Airflow
     - Источник данных - TelecomX
-- Postgres
+- GreenPlum
 - ETL
 - Исходные коды всего - в Git
 
@@ -158,6 +201,8 @@ Apache Airflow — инструмент для оркестрации ETL-про
 - в Python — через асимптотику операций с pandas/списками (например, O(n) vs O(n²)).
 
 Это помогает избегать «тормозящих» решений на собеседованиях и в реальных пайплайнах.
+
+# Карьера и менторство
 
 ## Менторство по этому роадмапу
 
@@ -207,7 +252,6 @@ Apache Airflow — инструмент для оркестрации ETL-про
 
 Мы кратко знакомимся с:
 
-- **Greenplum** — MPP-хранилищем на базе PostgreSQL для распределённых запросов;
 - **Apache NiFi** и **Kafka** — инструментами для построения потоковых и интеграционных пайплайнов;
 - **ClickHouse** — колоночной СУБД для высоконагруженной аналитики;
 - **dbt** — подходом к трансформации данных как кода.
@@ -215,14 +259,6 @@ Apache Airflow — инструмент для оркестрации ETL-про
 Практика ограничивается минимальным рабочим примером (например, запуск в Docker, простой пайплайн или SQL-модель).
 
 Этого достаточно, чтобы уверенно говорить об инструменте на собеседовании и понимать его место в архитектуре — а всё остальное при необходимости осваивается уже на проекте.
-
-## Greenplum
-Дать теоретический материал - разница с Postgres.
-Предварительно: [Учебный курс по Greenplum](https://datafinder.ru/products/uchebnyy-kurs-po-greenplum) - дать только отдельные главы
-Контейнер с GreenPlum, несколько домашек по нему, чтобы прочувствовать работу распределенных запросов.
-- [sergeyosechkin/greenplum Tags | Docker Hub](https://hub.docker.com/r/sergeyosechkin/greenplum/tags)
-- [Как собрать Docker-образ Greengage DB | Greengage DB Docs](https://greengagedb.org/ru/docs-gg/current/use_docker.html)
-В сложности с виртуалками - только если менти сильно захочет. Не буду рекомендовать.
 
 ## ClickHouse
 Бесплатный курс https://yandex.cloud/ru/training/clickhouse  
@@ -249,7 +285,7 @@ dbt (data build tool) — инструмент для трансформации
 - [Гайд как писать отзывы](https://boosty.to/m0rtymerr/posts/b04040ec-0f46-4524-9c75-188a513140ad?share=post_link)  
 - [Гайд по Антистрессу](https://youtu.be/bu0YiXOKaoU)
 
-# Тех. материалы несортировано
+# Дополнительные материалы
 - [ananevsyu/SandBox_DB_public: Песочница для изучения различных технологий связанных с инженерией данных](https://gitflic.ru/project/ananevsyu/sandbox_db_public)
     - Клон проекта [dementev_dev/sandbox_db_public-форк](https://gitflic.ru/project/dementev_dev/sandbox_db_public-fork)
 - [Индексы в БД - Youtube](https://www.youtube.com/watch?v=DyqtBiDrz3g)
