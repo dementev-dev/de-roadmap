@@ -82,14 +82,13 @@
 
 Цель — не стать архитектором, а **уметь читать и объяснять структуру данных**, чтобы писать осмысленные запросы и трансформации.
 
-Материалы:
+Материалы (включая демо DWH-модель из этого репозитория):
 - [Яндекс Практикум: что такое нормализация, простыми словами (для самых начинающих)](https://practicum.yandex.ru/blog/chto-takoe-normalizaciya-dannyh/)
 - [Базы данных. 1,2,3 нормальные формы. - Youtube](https://www.youtube.com/watch?v=zwQzL80U51c)
 - [Введение в структуру хранилища данных](dwh-modeling/README.md)
 - Теория про Slowly Changing Dimensions: [SCD](dwh-modeling/SCD.md)
 - Еще про Data Vault:
-  - [Введение в Data Vault - Хабр](https://habr.com/ru/articles/348188/)
-  - [Основы Data Vault - Хабр](https://habr.com/ru/articles/502968/)
+  - Конспект и примеры из этого репозитория: [DataVault.md](dwh-modeling/DataVault.md)
   - [DataVault за 10 минут - Youtube](https://www.youtube.com/watch?v=9oQs_wJ045I)
   - Статья [«Что такое Data Vault: моделирование КХД для архитектора Big Data»](https://bigdataschool.ru/blog/what-is-data-vault/) — обзор, плюсы/минусы, контекст применения.
   - [Гибкие методологии проектирования Data Vault и Anchor Modeling | Евгений Ермаков | karpov.courses](https://www.youtube.com/watch?v=fNGIOb8SJvU)
@@ -119,7 +118,7 @@
   - [Tproger: «ООП простыми словами»](https://tproger.ru/experts/oop-in-simple-words)
   - Введение в [ООП](https://metanit.com/python/tutorial/7.1.php)
   - [Яндекс Учебник: «Объектная модель Python: классы, поля и методы»](https://education.yandex.ru/handbook/python/article/obuektnaya-model-python-klassy-polya-i-metody)
-  - [Real Python: OOP in Python (tutorial)](https://realpython.com/python3-object-oriented]
+  - [Real Python: OOP in Python (tutorial)](https://realpython.com/python3-object-oriented-programming/)
 - Jupyter Lab
   - [Блог Практикума: «Что такое Jupyter Notebook: как установить и открыть»](https://practicum.yandex.ru/blog/chto-takoe-jupyter-notebook/)
   - Готовая реализация Jupyter Lab, включающая в себя Spark, в Docker: https://github.com/dementev-dev/jupyter-spark-docker
@@ -205,7 +204,7 @@ Apache Airflow — инструмент для оркестрации ETL-про
 - Оно же, но текстом: https://halltape.github.io/HalltapeRoadmapDE/GREENPLUM/
 - [Визуализатор распределения Greenplum](https://gpskew.rzvde.pro/)
 - Бесплатный, но большой учебный курс от Yandex: https://yandex.cloud/ru/training/greenplum
-- [Учебный курс по Greenplum от datafiner](https://datafinder.ru/products/uchebnyy-kurs-po-greenplum) — взять только отдельные главы.
+- [Учебный курс по Greenplum от datafinder](https://datafinder.ru/products/uchebnyy-kurs-po-greenplum) — взять только отдельные главы.
 
 Практика: 
 - [DE Starter Kit — Airflow + Greenplum + CSV](https://github.com/dementev-dev/airflow-greenplum)
@@ -257,13 +256,12 @@ Apache Airflow — инструмент для оркестрации ETL-про
 
 - Видео от ОМ по составлению резюме
     - [Как накрутить опыт в резюме | «Ультимативный гайд» ‪@digital_ninja‬](https://www.youtube.com/watch?v=EPuogJuYsvY)
-    -  [Как писать резюме, чтобы его читали - доклад - Boosty](https://boosty.to/m0rtymerr/posts/71b02a6b-8116-466a-b945-b2ed793abd8f)
+    - [Как писать резюме, чтобы его читали - доклад - Boosty](https://boosty.to/m0rtymerr/posts/71b02a6b-8116-466a-b945-b2ed793abd8f)
     - [Как грамотно продать себя на собеседовании / Созвон сообщества - Boosty](https://boosty.to/m0rtymerr/posts/7289cd23-60c6-4010-bb1c-a5b28dac399a)
-- Попытки менти написать, моя обратная связь - итеративно
+- Попытки менти написать резюме, моя обратная связь — итеративно.
 
 ### Навыки поиска работы с HH и Habr карьера
 
-- [Как накрутить опыт в резюме | «Ультимативный гайд» ‪@digital_ninja‬](https://www.youtube.com/watch?v=EPuogJuYsvY)
 - [Как подтвердить опыт без трудовой / Хабр против работяг](https://www.youtube.com/watch?v=GHqABzA1zi8)
 - [Как успешно пройти испытательный срок в IT | «Ультимативный гайд» c @digital_ninja - Youtube](https://www.youtube.com/watch?v=r1lWP5rYVdk)
 - Видео по прохождению собесов от ОМ.
