@@ -121,9 +121,9 @@
   - [Tproger: «Наглядная шпаргалка по операциям с DataFrame»](https://tproger.ru/articles/pandas-data-wrangling-cheatsheet)
 
 
-Полезно, но дороговато и не обязательно: хорошее комбо SQL + Python: ["Поколение Python": профи + ООП + SQL – Stepik](https://stepik.org/course/233341/promo?search=7181036958)
+Полезно, но дороговато и не обязательно: хорошее комбо SQL + Python — ["Поколение Python": профи + ООП + SQL – Stepik](https://stepik.org/course/233341/promo?search=7181036958)
 
-Цель - LiveCoding простых задач Python, далее нужно будет для создания DAG Airflow
+Цель — уверенно решать простые задачи на Python в формате live-coding; дальше эти навыки пригодятся для создания DAG Airflow.
 
 ## Технические навыки
 
@@ -181,7 +181,7 @@ Apache Airflow — инструмент для оркестрации ETL-про
 - Бесплатный, но большой учебный курс от Yandex: https://yandex.cloud/ru/training/greenplum
 - [Учебный курс по Greenplum от datafiner](https://datafinder.ru/products/uchebnyy-kurs-po-greenplum) — взять только отдельные главы.
 
-Практика (минимум, чтобы уверенно чувствовать себя на собеседованиях): 
+Практика (минимум, который мы делаем вместе, чтобы уверенно чувствовать себя на собеседованиях): 
 - [DE Starter Kit — Airflow + Greenplum + CSV](https://github.com/dementev-dev/airflow-greenplum)
 
 Сложные варианты с виртуалками — только если менти сильно захочет, в базовый путь не включаем.
@@ -220,7 +220,7 @@ Apache Airflow — инструмент для оркестрации ETL-про
 со словами «Хочу пройти роадмап с ментором» — дальше всё обсудим.
 
 ## Подготовка к собеседованиям
-Думаем, как "сделать" опыт, от 2 лет
+Цель блока — сформировать «опыт от 2 лет» и уметь корректно его показать в резюме и на собеседовании.
 
 ### Помощь в подготовке резюме
 
@@ -265,15 +265,20 @@ Apache Airflow — инструмент для оркестрации ETL-про
 Платный курс [ClickHouse для аналитика – Stepik](https://stepik.org/course/100210/promo?search=6551441002)  
 
 ## NiFi
-Плейлист [Apache NiFi с нуля за 3 часа. Конструктор вместо кода - Youtube](https://youtube.com/playlist?list=PL4MpKy3QjNp_rOEEibc4Ro8UK4g8vLX6_&si=W_hidjHmBOZ_aUfS) - первые 4 видео. Дальше - по желанию.
-Делаем отдельный docker compose Postgres + Nifi
-В NiFi собираем генератор данных
+Плейлист [Apache NiFi с нуля за 3 часа. Конструктор вместо кода - Youtube](https://youtube.com/playlist?list=PL4MpKy3QjNp_rOEEibc4Ro8UK4g8vLX6_&si=W_hidjHmBOZ_aUfS) — первые 4 видео, дальше — по желанию.
+
+Практика (делаем вместе):
+- собираем отдельный стенд в Docker Compose с Postgres и NiFi;
+- в NiFi настраиваем простой генератор данных.
 
 ## Kafka
 [Лучший Гайд по Kafka для Начинающих За 1 Час - Youtube](https://www.youtube.com/watch?v=hbseyn-CfXY)
-Добавляем к предыдущему docker compose Kafka. 
-Строим поток данных NiFi->Kafka
-Kafka->NiFi->Postgres
+
+Практика:
+Практика (делаем вместе):
+- расширяем предыдущий стенд, добавляя Kafka;
+- строим поток данных: NiFi → Kafka;
+- добавляем обратный поток: Kafka → NiFi → Postgres.
 
 ## dbt
 dbt (data build tool) — инструмент для трансформации данных в хранилище.
@@ -295,10 +300,9 @@ dbt (data build tool) — инструмент для трансформации
 - [Алгоритмы: теория и практика. Методы – Stepik](https://stepik.org/course/217/info)
 - [Алгоритмы: теория и практика. Структуры данных – Stepik](https://stepik.org/course/1547/promo)
 - [Apache Hadoop для самых маленьких: HDFS, RACK-AWARENESS, репликация и Data Locality - Youtube](https://youtu.be/0fsY5bW2l84)
-- [■ Книга. Введение в Apache Kafka для системных аналитиков и проектировщиков интеграций](https://systems.education/kafka)
+- [Книга. Введение в Apache Kafka для системных аналитиков и проектировщиков интеграций](https://systems.education/kafka)
 - [Перевод документации dbt на русский язык](https://docs.getdbt.tech/)
 
 ## Записи ОМ
 - [Как пройти собеседование на программиста | Ультимативный гайд с ‪@om_nazarov‬ - Youtube](https://www.youtube.com/watch?v=tzSdiYZ52kI)
 - [Как стать программистом в 2025 | «Ультимативный гайд» с ‪@om_nazarov‬](https://www.youtube.com/watch?v=6151ekTOl38)
-- 
