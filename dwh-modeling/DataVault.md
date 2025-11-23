@@ -97,8 +97,6 @@ erDiagram
     SAT_CUSTOMER_INFO {
         varchar customer_bk FK
         varchar hashdiff
-        timestamp valid_from
-        timestamp valid_to
         varchar name
         varchar email
         varchar city
@@ -109,8 +107,6 @@ erDiagram
     SAT_ORDER_STATUS {
         varchar link_key FK
         varchar hashdiff
-        timestamp valid_from
-        timestamp valid_to
         varchar status
         varchar record_source
         timestamp load_dttm
@@ -133,13 +129,11 @@ erDiagram
 
 * бизнес‑ключ (customer_bk, order_id, contract_number);
 * техническую информацию:
-
   * record_source — из какой системы пришла первая запись;
   * load_dttm — когда запись попала в DV;
   * иногда — хэш бизнес‑ключа (hk_customer).
 
 Главные правила:
-
 * один бизнес‑ключ — один хаб (одна строка на сущность, без истории);
 * хаб не знает про атрибуты (имя, email) — только идентичность.
 
@@ -196,16 +190,13 @@ CREATE TABLE link_order_customer (
 
 * ссылка на HUB или LINK (hk_customer, hk_order_customer);
 * атрибуты (email, city, status и т.п.);
-* valid_from / valid_to — период действия версии;
 * hashdiff — хэш от всех атрибутов, чтобы понять, изменилась ли строка;
-* record_source, load_dttm.
+* record_source, load_dttm — источник и момент загрузки версии.
 
 ```sql
 CREATE TABLE sat_customer_info (
     hk_customer    BYTEA      NOT NULL,
     hashdiff       BYTEA      NOT NULL,
-    valid_from     TIMESTAMP  NOT NULL,
-    valid_to       TIMESTAMP  NOT NULL,
     name           VARCHAR(100),
     email          VARCHAR(100),
     city           VARCHAR(50),
@@ -215,6 +206,8 @@ CREATE TABLE sat_customer_info (
 ```
 
 Главная мысль: DV заставляет явно разделять идентичность, связи и атрибуты с историей. Это делает модель сложнее на вид, но гораздо устойчивее к изменениям источников.
+
+Когда нужны именно бизнес-периоды действия («с/по»), их удобнее моделировать не в базовом сателлите, а отдельными effectivity-сателлитами или через PIT-таблицы в Business Vault.
 
 ## 4. Типы сателлитов в DV 2.0
 
@@ -501,11 +494,10 @@ customer_bk | record_source | load_dttm
 101         | CRM           | 2023-01-10 10:00
 
 SAT_CUSTOMER_INFO
+customer_bk | load_dttm           | email              | city
 ---------------------------------------------------------------------
-customer_bk | valid_from | valid_to   | email              | city
----------------------------------------------------------------------
-101         | 2023-01-10 | 2023-06-01 | a@example.com      | Moscow
-101         | 2023-06-01 | 9999-12-31 | alice@newmail.com  | Moscow
+101         | 2023-01-10 10:00    | a@example.com      | Moscow
+101         | 2023-06-01 09:00    | alice@newmail.com  | Moscow
 
 HUB_ORDER
 --------------------------------------
@@ -515,13 +507,12 @@ order_id    | record_source | load_dttm
 5002        | SHOP          | 2023-06-11 09:30
 
 SAT_ORDER_STATUS
-----------------------------------------------------------------
-order_id | valid_from | valid_to   | status
-----------------------------------------------------------------
-5001     | 2023-06-10 | 2023-06-10 | created
-5001     | 2023-06-10 | 2023-06-11 | paid
-5001     | 2023-06-11 | 9999-12-31 | shipped
-...      | ...        | ...        | ...
+order_id | load_dttm           | status
+-------------------------------------------------------
+5001     | 2023-06-10 12:00    | created
+5001     | 2023-06-10 12:05    | paid
+5001     | 2023-06-11 09:00    | shipped
+...      | ...                 | ...
 ```
 
 Ключевая идея: **любое изменение** (email, статус) — это **новая строка** в соответствующем Satellite.
