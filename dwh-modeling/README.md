@@ -723,6 +723,12 @@ SELECT 'OK' WHERE EXISTS (
 
 ## Приложения
 
+### Дополнительные материалы и практика
+
+- [Домашка: статусы клиента от STG до DDS (и немного DM)](Homework_Customer_Status_DDS_DM.md)
+- [SCD: как хранить историю изменений](SCD.md)
+- [DataVault: как пережить бурную жизнь источников](DataVault.md)
+
 ### 📚 Мини-глоссарий (RU / EN)
 
 | Термин | Пояснение |
@@ -839,4 +845,3 @@ CREATE TABLE dds.fact_sales (
 ```
 
 > 💡 `date_key` — это `20240110`, а не `DATE`, чтобы не делать JOIN по диапазону в `fact → dim_date`.
-
