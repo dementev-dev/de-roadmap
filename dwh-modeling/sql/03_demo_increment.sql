@@ -43,7 +43,7 @@ SET email   = EXCLUDED.email,
 WHERE COALESCE(EXCLUDED.event_ts, EXCLUDED._load_ts) >
       COALESCE(ods.customers.event_ts, ods.customers._load_ts);
 
--- 2) Инкрементальное SCD2 из ODS
+-- 2) Инкрементальное SCD2 из ODS (в одной транзакции, по последнему снимку в ODS)
 BEGIN;
     WITH delta AS (
       SELECT
@@ -53,34 +53,58 @@ BEGIN;
         dds.customer_hash(c.email, c.phone, c.city)           AS hashdiff
       FROM ods.customers c
     ),
-    expired AS (
-      UPDATE dds.dim_customer d
-         SET valid_to   = LEAST(d.valid_to, delta.eff_ts - interval '1 second'),
-             is_current = FALSE,
-             updated_at = now()
-      FROM delta
-      WHERE d.customer_bk = delta.customer_bk
-        AND d.is_current = TRUE
-        AND d.hashdiff  <> delta.hashdiff
-        AND delta.eff_ts >= d.valid_from
-      RETURNING d.customer_bk
+    current AS (
+      -- текущие версии клиентов в измерении
+      SELECT d.*
+      FROM dds.dim_customer d
+      WHERE d.is_current = TRUE
+    ),
+    to_upsert AS (
+      -- только новые BK или реально изменившиеся атрибуты
+      SELECT
+        d.customer_bk,
+        d.email,
+        d.phone,
+        d.city,
+        d.eff_ts,
+        d.hashdiff,
+        c.customer_sk     AS current_sk
+      FROM delta d
+      LEFT JOIN current c
+        ON c.customer_bk = d.customer_bk
+      WHERE c.customer_sk IS NULL       -- новый клиент
+         OR c.hashdiff <> d.hashdiff    -- изменились атрибуты
+    ),
+    inserted AS (
+      -- вставляем новые версии (одна строка на BK)
+      INSERT INTO dds.dim_customer (
+        customer_bk, email, phone, city, hashdiff,
+        valid_from,                                           valid_to,
+        is_current, created_at, updated_at
+      )
+      SELECT
+        t.customer_bk, t.email, t.phone, t.city, t.hashdiff,
+        CASE WHEN t.current_sk IS NULL
+             THEN timestamp '1900-01-01'                       -- первая версия: техническое "начало истории"
+             ELSE t.eff_ts
+        END                                                   AS valid_from,
+        timestamp '9999-12-31'                                AS valid_to,
+        TRUE, now(), now()
+      FROM to_upsert t
+      ON CONFLICT (customer_bk, valid_from) DO NOTHING
+      RETURNING customer_bk, valid_from
     )
-    INSERT INTO dds.dim_customer (
-      customer_bk, email, phone, city, hashdiff,
-      valid_from,                                                                 valid_to,
-      is_current, created_at, updated_at
-    )
-    SELECT
-      s.customer_bk, s.email, s.phone, s.city, s.hashdiff,
-      CASE WHEN d.customer_bk IS NULL THEN timestamp '1900-01-01' ELSE s.eff_ts END AS valid_from,
-      timestamp '9999-12-31',
-      TRUE, now(), now()
-    FROM delta s
-    LEFT JOIN dds.dim_customer d
-      ON d.customer_bk = s.customer_bk AND d.is_current = TRUE
-    WHERE d.customer_bk IS NULL      -- новый BK
-       OR d.hashdiff <> s.hashdiff   -- изменившийся BK
-    ON CONFLICT (customer_bk, valid_from) DO NOTHING;
+    -- закрываем старые версии только для тех BK, по которым реально вставилась новая
+    UPDATE dds.dim_customer d
+       SET valid_to   = LEAST(d.valid_to, t.eff_ts - interval '1 second'),
+           is_current = FALSE,
+           updated_at = now()
+      FROM to_upsert t
+      JOIN inserted i
+        ON i.customer_bk = t.customer_bk
+     WHERE d.customer_sk = t.current_sk
+       AND d.is_current = TRUE
+       AND t.eff_ts >= d.valid_from;
 COMMIT;
 
 -- (факты можно не перезаливать — даты заказов не поменялись)

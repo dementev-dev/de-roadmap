@@ -230,6 +230,13 @@ WHERE customer_id = 1 AND is_current = true
 
 ---
 
+В учебном проекте из папки `dwh-modeling/sql/` эти идеи можно увидеть «вживую»:
+
+- в [`02_dml_stg-dds.sql`](sql/02_dml_stg-dds.sql) собирается полная история клиентов (SCD2) из всех событий в `stg.customers_raw` — это пример **первичной загрузки** / `full backfill`;
+- в [`03_demo_increment.sql`](sql/03_demo_increment.sql) реализован **инкрементальный SCD2**: в одной транзакции добавляются новые версии клиентов из снимка `ods.customers` и закрываются предыдущие актуальные строки в `dds.dim_customer`.
+
+---
+
 #### А что, если СУБД не позволяет UPDATE? (Trino, Hive, ClickHouse в режиме append-only)
 
 Некоторые аналитические системы (например, **Hive в формате ORC/Parquet**, **Trino**, **ClickHouse в режиме только вставки**) **не поддерживают UPDATE старых строк**. Как тогда реализовать SCD Type 2?

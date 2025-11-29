@@ -128,6 +128,8 @@ SELECT product_id, name
 FROM ods.products;
 
 -- 5. DDS: dim_customer — первичная загрузка SCD2 (full backfill из STG)
+--    Здесь мы пересчитываем всю историю клиента из событий в STG.
+--    В реальном DWH такую полную перезагрузку делают редко; для инкремента см. 03_demo_increment.sql и SCD.md.
 TRUNCATE dds.dim_customer, dds.fact_sales;
 
 BEGIN;
@@ -158,7 +160,7 @@ BEGIN;
   framed AS (
     SELECT
       customer_bk, email, phone, city, hashdiff,
-      CASE WHEN rn = 1 THEN timestamp '1900-01-01' ELSE eff_ts END        AS valid_from,
+      CASE WHEN rn = 1 THEN timestamp '1900-01-01' ELSE eff_ts END        AS valid_from,  -- первая версия: техническое "начало истории"
       lead(eff_ts) OVER (PARTITION BY customer_bk ORDER BY eff_ts)        AS next_ts
     FROM changes
   )

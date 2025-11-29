@@ -529,12 +529,12 @@ flowchart TD
 
 Все необходимые скрипты для построения хранилища находятся в папке [`sql/`](sql/):
 
-- [`01_ddl_stg-dds.sql`](sql/01_ddl_stg-dds.sql) — создание схем и таблиц (STG, ODS, DDS)
-- [`02_dml_stg-dds.sql`](sql/02_dml_stg-dds.sql) — загрузка данных и трансформация
-- [`03_demo_increment.sql`](sql/03_demo_increment.sql) — инкрементальная загрузка и SCD2
-- [`04_validation.sql`](sql/04_validation.sql) — проверки качества данных
-- [`05_ddl_dm.sql`](sql/05_ddl_dm.sql) — создание витрин (Data Marts)
-- [`06_dml_dm.sql`](sql/06_dml_dm.sql) — наполнение витрин данными
+- [`01_ddl_stg-dds.sql`](sql/01_ddl_stg-dds.sql) — создание схем и таблиц (STG, ODS, DDS);
+- [`02_dml_stg-dds.sql`](sql/02_dml_stg-dds.sql) — первичная загрузка данных и демонстрация SCD2 через полный пересчёт (`full backfill`) из STG;
+- [`03_demo_increment.sql`](sql/03_demo_increment.sql) — пример инкрементальной загрузки и SCD2 по последнему снимку в ODS;
+- [`04_validation.sql`](sql/04_validation.sql) — проверки качества данных;
+- [`05_ddl_dm.sql`](sql/05_ddl_dm.sql) — создание витрин (Data Marts);
+- [`06_dml_dm.sql`](sql/06_dml_dm.sql) — наполнение витрин данными.
 
 ### Пример SQL-запроса для витрины
 
