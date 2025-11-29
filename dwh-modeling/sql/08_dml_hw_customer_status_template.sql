@@ -8,7 +8,8 @@
 -- 1) Загрузите CSV в stg.customer_status_raw (через COPY или \copy в psql).
 --    См. пример структуры файла в dwh-modeling/data/customer_status_events.csv
 -- 2) Переложите данные в ods.customer_status с приведением типов.
---    customer_id → INT, status → VARCHAR(20), event_ts / load_ts → TIMESTAMP.
+--    customer_id → INT, status → VARCHAR(20), event_ts / load_ts → TIMESTAMP
+--    (в STG/ODS эта колонка будет жить как _load_ts).
 -- 3) Постройте из ods.customer_status измерение dds.dim_customer_status в стиле SCD2:
 --    - одна строка на период действия статуса (valid_from / valid_to);
 --    - is_current = TRUE только у актуальной строки для клиента;
@@ -45,4 +46,3 @@
 -- );
 -- Идея: на каждую дату взять актуальный статус клиента
 -- через JOIN dds.dim_customer_status + dds.dim_date.
-

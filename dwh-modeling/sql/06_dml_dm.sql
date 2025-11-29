@@ -34,7 +34,6 @@ GROUP BY d.date_actual, p.product_name,
 -- Здесь — НЕ используем is_current! Нам нужна вся история для расчёта LTV
 -- Для кого: CRM-менеджер, retention-спец
 -- Пример использования: «Найти клиентов с LTV > 250 ₽ и email из Москвы для email-рассылки»
-«Найти клиентов с LTV > 250 ₽ и email из Москвы для email-рассылки»
 INSERT INTO dm.mart_customer_360 (
     customer_bk, first_order_date, last_order_date,
     total_orders, total_items, lifetime_value,
@@ -44,7 +43,7 @@ SELECT
     c.customer_bk,
     MIN(d.date_actual) AS first_order_date,
     MAX(d.date_actual) AS last_order_date,
-    COUNT(DISTINCT f.sale_id) AS total_orders,
+    COUNT(DISTINCT f.sale_id) AS total_orders,  -- считаем строки факта (продажи), не бизнес-заказы
     SUM(f.quantity) AS total_items,
     SUM(f.amount) AS lifetime_value,
     -- Берём email и город из самой свежей версии клиента

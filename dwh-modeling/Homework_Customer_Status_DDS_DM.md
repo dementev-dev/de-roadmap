@@ -41,7 +41,7 @@ customer_id,status,event_ts,_load_id,load_ts
 - `status` — статус клиента в CRM (`new`, `active`, `vip`, `churned`);
 - `event_ts` — момент, когда статус сменился в CRM;
 - `_load_id` — идентификатор батча загрузки;
-- `load_ts` — момент, когда данные попали в DWH.
+- `load_ts` — момент, когда данные попали в DWH (в таблицах STG/ODS эта колонка будет называться `_load_ts`, но по смыслу это то же самое время загрузки).
 
 Файл содержит несколько клиентов и несколько смен статуса по каждому — этого достаточно, чтобы отработать SCD2.
 
@@ -93,7 +93,7 @@ SELECT * FROM stg.customer_status_raw LIMIT 10;
 - привести:
   - `customer_id` → `INT`,
   - `status` → `VARCHAR(20)` (можно оставить как есть),
-  - `event_ts` и `load_ts` → `TIMESTAMP`;
+  - `event_ts` и `load_ts` → `TIMESTAMP` (в DWH-таблицах эта колонка будет лежать как `_load_ts`);
 - аккуратно обработать возможные пустые значения (если бы они были);
 - заполнить `_load_id` и `_load_ts` в `ods.customer_status`.
 
@@ -129,14 +129,14 @@ ORDER BY customer_id, event_ts;
    - `customer_bk`,
    - `status`,
    - `event_ts` (как «время начала действия статуса»),
-   - `hashdiff` (например, `md5(status)` или `dds.customer_hash(status)` по аналогии с `dim_customer`).
+   - `hashdiff` (например, `md5(status)`; можно вынести расчёт в отдельную функцию по аналогии с `dds.customer_hash` для клиентов).
 
 2. Для каждого клиента отсортируйте события по `event_ts` и с помощью `LEAD()` посчитайте:
 
    - `valid_from` — текущее `event_ts`,
    - `valid_to` — следующее `event_ts - 1 second` (или `9999-12-31`, если следующего нет).
 
-3. Вставьте получившиеся строки в `dds.dim_customer_status`:
+3. Вставьте получившиеся строки в `dds.dim_customer_status`. У актуальной строки для каждого клиента задайте `is_current = TRUE` (например, там, где `valid_to = '9999-12-31'`), у остальных — `FALSE`:
 
 ```sql
 INSERT INTO dds.dim_customer_status (
@@ -238,4 +238,3 @@ ORDER BY date_actual, status;
    - при желании — собрать простую витрину в `dm`.
 
 Если что‑то не получается — можно разбирать решения по шагам вместе с ментором: от простого `SELECT` из STG до полноценного SCD2 в DDS.
-

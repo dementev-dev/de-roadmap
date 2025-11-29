@@ -83,7 +83,7 @@ ALTER TABLE ods.products   ADD PRIMARY KEY (product_id);
 
 -- 4. DDS: интегрированная модель
 
--- dim_date: справочник дат (без первичного ключа — генерируется)
+-- dim_date: справочник дат (ключ — суррогатный date_key)
 CREATE TABLE dds.dim_date (
     date_key     INT PRIMARY KEY,
     date_actual  DATE NOT NULL,
@@ -118,9 +118,9 @@ CREATE TABLE dds.dim_customer (
     updated_at    TIMESTAMP   NOT NULL DEFAULT NOW()
 );
 
--- одна версия на момент времени
+-- одна версия на момент времени (на одну пару BK+valid_from)
 ALTER TABLE dds.dim_customer
-    ADD CONSTRAINT uq_dim_customer_bk_from UNIQUE (customer_bk, valid_from);    -- dim_product: измерение "
+    ADD CONSTRAINT uq_dim_customer_bk_from UNIQUE (customer_bk, valid_from);
 
 -- ускорители
 CREATE INDEX ix_dim_customer_bk_current ON dds.dim_customer (customer_bk) WHERE is_current;
