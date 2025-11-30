@@ -31,6 +31,7 @@
 Что такое контроль версий, когда используется, ПОЧЕМУ и как мы в обучении будем использовать.
 Как создать репозиторий на GitHub, сохранять в нем изменения.
 - [Что такое Git для Начинающих / GitHub за 30 минут / Git Уроки - Youtube](https://www.youtube.com/watch?v=VJm_AjiTEEc)
+- [Git: Конфликты для Начинающих // Git Cherry Pick, Git Revert, Git Reset - Youtube](https://www.youtube.com/watch?v=F7FnnfnB9YY)
 - Книга [Pro Git](https://git-scm.com/book/ru/v2) - читать главу 1
 
 ### Основы Markdown
@@ -42,7 +43,7 @@
 
 **Когда блок Git и базовые инструменты считаем пройденным:**
 - вы уверенно создаёте репозиторий, коммитите изменения и отправляете их на GitHub;
-- умеете работать с ветками: создавать, переключаться, делать merge/PR и разруливать простые конфликты;
+- имеете представление о работе с ветками: создание, переключение, что такое merge/PR и разруливание простых конфликтов;
 - оформляете базовую документацию в Markdown (README, заголовки, списки, ссылки, кодовые блоки).
 
 ## SQL
@@ -108,7 +109,7 @@
 
 - Если совсем не знакомы с Python, начинаем с курса ["Поколение Python": курс для начинающих – Stepik](https://stepik.org/course/58852/info)
 - Изучаем глубже и "оттачиваем" live coding: ["Поколение Python": курс для продвинутых – Stepik](https://stepik.org/course/68343/info)
-- Продолжение "базы", спрашиваемой на собеседованиях, по Python: ["Поколение Python": курс для профессионалов](https://stepik.org/course/82541/promo). Курс очень полезный, но платный.
+- Продолжение "базы", спрашиваемой на собеседованиях, по Python: ["Поколение Python": курс для профессионалов](https://stepik.org/course/82541/promo). Курс очень полезный, но платный. Вместо него можно почитать "продвинутые" темы дальше.
 - "Продвинутые" темы:
   - [Полезные функции](https://pyneng.readthedocs.io/ru/latest/book/10_useful_functions/index.html)
   - [Работа с файлами в формате CSV, JSON, YAML](https://pyneng.readthedocs.io/ru/latest/book/17_serialization/index.html)
@@ -150,7 +151,7 @@
     - 3 Ветвление в Git
     - 5 Распределённый Git
     - 6 GitHub
-- [Курс работы с Git и GitLab - ЭФКО ЦПР | YouTube плейлист](https://www.youtube.com/playlist?list=PLbf8m52BvqlFlblJqQKPuEU26pwgqe7zK)
+- [Курс работы с Git и GitLab - ЭФКО ЦПР | YouTube плейлист](https://www.youtube.com/playlist?list=PLbf8m52BvqlFlblJqQKPuEU26pwgqe7zK). Настоятельно рекомендую проделать за лектором все те действия что он показывает.
 
 Целевой уровень знания - понимание процесса GitFlow. Как создать ветку, влить изменения в другие ветки. Понимание, зачем.
 На собесах обычно не спрашивают, но нужно в работе.
@@ -171,7 +172,8 @@
 
 ### Запись встреч
 OBS Studio
-[Настройка записи экрана](https://docs.google.com/document/d/1qd8uRYlAaZp9c5zpvCVBOvYQCEukGHI9PEPjnjahI1k/)
+- Руководство по OBS: [OBS Studio - Настройка ОБС для Записи Игр и Стрима | Настройка Микрофона в Обс и т.д - Youtube](https://www.youtube.com/watch?v=bj8VEphZ65U)
+- [Как записывать собеседования](https://docs.google.com/document/d/1qd8uRYlAaZp9c5zpvCVBOvYQCEukGHI9PEPjnjahI1k/)
 
 **Когда блок технических навыков считаем пройденным:**
 - вы понимаете базовый GitFlow: как организована работа с ветками в команде и как ваши коммиты попадают в прод;
