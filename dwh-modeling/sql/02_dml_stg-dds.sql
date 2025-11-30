@@ -128,54 +128,59 @@ SELECT product_id, name
 FROM ods.products;
 
 -- 5. DDS: dim_customer — первичная загрузка SCD2 (full backfill из STG)
+--    В ЭТОМ ДЕМО: dim_customer строится напрямую из stg.customers_raw, который играет роль
+--    устойчивого event-лога (все события по клиенту в одном месте).
+--    Это удобно для учебной первичной загрузки (full backfill), когда мы один раз
+--    восстанавливаем всю историю клиента.
+--    В РЕАЛЬНОМ DWH: так делают редко. Исторические измерения обычно строят
+--    поверх очищенных и нормализованных слоёв (ODS / PSA / Data Vault).
+--    Для примера инкрементальной заливки SCD2 по снимку из ODS см. 03_demo_increment.sql и SCD.md.
 TRUNCATE dds.dim_customer, dds.fact_sales;
 
-BEGIN;
-  WITH src AS (
-    SELECT
-      s.customer_id::INT                                         AS customer_bk,
-      NULLIF(trim(s.email), '')                                   AS email,
-      NULLIF(trim(s.phone), '')                                   AS phone,
-      NULLIF(trim(s.city),  '')                                   AS city,
-      COALESCE(NULLIF(s.event_ts,'')::timestamp, s._load_ts,
-               to_timestamp(regexp_replace(s._load_id,'^batch_',''),'YYYYMMDD_HH24MI')) AS eff_ts,
-      dds.customer_hash(s.email, s.phone, s.city)                 AS hashdiff
-    FROM stg.customers_raw s
-    WHERE s.customer_id ~ '^\d+$'
-  ),
-  ordered AS (
-    SELECT *,
-           lag(hashdiff) OVER (PARTITION BY customer_bk ORDER BY eff_ts) AS prev_hash,
-           row_number()  OVER (PARTITION BY customer_bk ORDER BY eff_ts) AS rn
-    FROM src
-  ),
-  changes AS (
-    -- только первые состояния и фактические изменения атрибутов
-    SELECT *
-    FROM ordered
-    WHERE prev_hash IS DISTINCT FROM hashdiff OR prev_hash IS NULL
-  ),
-  framed AS (
-    SELECT
-      customer_bk, email, phone, city, hashdiff,
-      CASE WHEN rn = 1 THEN timestamp '1900-01-01' ELSE eff_ts END        AS valid_from,
-      lead(eff_ts) OVER (PARTITION BY customer_bk ORDER BY eff_ts)        AS next_ts
-    FROM changes
-  )
-  INSERT INTO dds.dim_customer (
-      customer_bk, email, phone, city, hashdiff,
-      valid_from,                                           valid_to,                       is_current,
-      created_at, updated_at
-  )
+WITH src AS (
   SELECT
-      customer_bk, email, phone, city, hashdiff,
-      valid_from,
-      COALESCE(next_ts - interval '1 second', timestamp '9999-12-31') AS valid_to,
-      (next_ts IS NULL)                                               AS is_current,
-      now(), now()
-  FROM framed
-  ORDER BY customer_bk, valid_from;
-COMMIT;
+    s.customer_id::INT                                         AS customer_bk,
+    NULLIF(trim(s.email), '')                                   AS email,
+    NULLIF(trim(s.phone), '')                                   AS phone,
+    NULLIF(trim(s.city),  '')                                   AS city,
+    COALESCE(NULLIF(s.event_ts,'')::timestamp, s._load_ts,
+              to_timestamp(regexp_replace(s._load_id,'^batch_',''),'YYYYMMDD_HH24MI')) AS eff_ts,
+    dds.customer_hash(s.email, s.phone, s.city)                 AS hashdiff
+  FROM stg.customers_raw s
+  WHERE s.customer_id ~ '^\d+$'
+),
+ordered AS (
+  SELECT *,
+          lag(hashdiff) OVER (PARTITION BY customer_bk ORDER BY eff_ts) AS prev_hash,
+          row_number()  OVER (PARTITION BY customer_bk ORDER BY eff_ts) AS rn
+  FROM src
+),
+changes AS (
+  -- только первые состояния и фактические изменения атрибутов
+  SELECT *
+  FROM ordered
+  WHERE prev_hash IS DISTINCT FROM hashdiff OR prev_hash IS NULL
+),
+framed AS (
+  SELECT
+    customer_bk, email, phone, city, hashdiff,
+    CASE WHEN rn = 1 THEN timestamp '1900-01-01' ELSE eff_ts END        AS valid_from,  -- первая версия: техническое "начало истории"
+    lead(eff_ts) OVER (PARTITION BY customer_bk ORDER BY eff_ts)        AS next_ts
+  FROM changes
+)
+INSERT INTO dds.dim_customer (
+    customer_bk, email, phone, city, hashdiff,
+    valid_from,                                           valid_to,                       is_current,
+    created_at, updated_at
+)
+SELECT
+    customer_bk, email, phone, city, hashdiff,
+    valid_from,
+    COALESCE(next_ts - interval '1 second', timestamp '9999-12-31') AS valid_to,
+    (next_ts IS NULL)                                               AS is_current,
+    now(), now()
+FROM framed
+ORDER BY customer_bk, valid_from;
 
 -- 6. DDS: fact_sales — загрузка фактов с учётом SCD
 -- В продакшене — фильтруем по диапазону дат (инкрементально)

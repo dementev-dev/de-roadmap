@@ -1,6 +1,6 @@
 -- ===============================================
 -- Проверки качества данных после загрузки STG→ODS→DDS
--- Запускается после 02_dml.sql
+-- Запускается после 02_dml_stg-dds.sql (и, при необходимости, 03_demo_increment.sql)
 -- ===============================================
 
 -- 1. Проверка: dim_customer не пуста
@@ -12,7 +12,8 @@ BEGIN
         (SELECT COUNT(*) FROM dds.dim_customer);
 END $$;
 
--- 3. Проверка: у каждого факта есть валидная дата (date_key существует)
+-- 2. Проверка: каждая строка из ODS попала в DDS-факт
+-- Сравниваем количество строк в ods.order_items и dds.fact_sales
 DO $$
 DECLARE 
     expected_count bigint;
@@ -28,7 +29,7 @@ BEGIN
     RAISE NOTICE '✅ fact_sales: количество строк совпадает с ods.order_items (%)', actual_count;
 END $$;
 
--- 4. Проверка SCD Type 2: у клиента 101 должно быть ≥2 версий (из-за смены email)
+-- 3. Проверка SCD Type 2: у клиента 101 должно быть ≥2 версий (из-за смены email)
 DO $$
 DECLARE version_count INT;
 BEGIN
@@ -38,6 +39,5 @@ BEGIN
     --
     ASSERT version_count >= 2,
         FORMAT('ОШИБКА: у клиента 101 только %s версия, ожидается ≥2 (должна быть история)', version_count);
-    RAISE NOTICE '✅ SCD Type 2: клиент 101 имеет %s версий — история сохранена', version_count;
+    RAISE NOTICE '✅ SCD Type 2: клиент 101 имеет % версий — история сохранена', version_count;
 END $$;
-

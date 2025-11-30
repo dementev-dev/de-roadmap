@@ -87,6 +87,7 @@
 - [Базы данных. 1,2,3 нормальные формы. - Youtube](https://www.youtube.com/watch?v=zwQzL80U51c)
 - [Введение в структуру хранилища данных](dwh-modeling/README.md)
 - Теория про Slowly Changing Dimensions: [SCD](dwh-modeling/SCD.md)
+- Практика по моделированию статусов клиента: [домашка STG → ODS → DDS → DM](dwh-modeling/Homework_Customer_Status_DDS_DM.md)
 - Еще про Data Vault:
   - Конспект и примеры из этого репозитория: [DataVault.md](dwh-modeling/DataVault.md)
   - [DataVault за 10 минут - Youtube](https://www.youtube.com/watch?v=9oQs_wJ045I)
