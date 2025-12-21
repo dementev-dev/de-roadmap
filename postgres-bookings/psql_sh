@@ -1,2 +1,20 @@
 #!/bin/bash
-docker compose exec -it db psql -U ${POSTGRES_USER:-postgres} -d demo
+set -euo pipefail
+
+# Usage:
+#   ./psql_sh                    # interactive psql inside container
+#   ./psql_sh -c "SELECT 1;"     # run a command
+#   cat file.csv | ./psql_sh -c "\\copy ... FROM STDIN WITH (FORMAT csv, HEADER true)"
+
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+compose_file="${script_dir}/docker-compose.yml"
+
+compose() {
+  docker compose -f "${compose_file}" --project-directory "${script_dir}" "$@"
+}
+
+if [ -t 0 ]; then
+  compose exec -it db psql -U "${POSTGRES_USER:-postgres}" -d demo "$@"
+else
+  compose exec -T db psql -U "${POSTGRES_USER:-postgres}" -d demo "$@"
+fi
