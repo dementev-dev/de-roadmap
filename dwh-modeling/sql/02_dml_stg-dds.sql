@@ -33,7 +33,7 @@ INSERT INTO stg.products_raw (product_id, name) VALUES
 ('9002', 'Case');
 
 -- 2. ODS: очистка и типизация
--- ⚠️ В продакшене используем UPSERT или incremental load, не TRUNCATE+INSERT
+-- ⚠️ В продакшене используем UPSERT (INSERT ... ON CONFLICT DO UPDATE) или incremental load, не TRUNCATE+INSERT
 
 TRUNCATE ods.customers, ods.orders, ods.order_items, ods.products;
 
@@ -134,9 +134,20 @@ FROM ods.products;
 --    В РЕАЛЬНОМ DWH: так делают редко. Исторические измерения обычно строят
 --    поверх очищенных и нормализованных слоёв (ODS / PSA / Data Vault).
 --    Для примера инкрементальной заливки SCD2 по снимку из ODS см. 03_demo_increment.sql и SCD.md.
+--
+-- Идея SCD2 простыми словами:
+--   - одна строка = один период, когда атрибуты клиента (email/phone/city) были одинаковыми;
+--   - valid_from = дата, когда "стало так";
+--   - valid_to = дата следующего изменения (NULL = текущая версия).
+--
+-- Откуда берём дату изменения:
+--   - если в событии есть event_ts — считаем, что изменение произошло тогда;
+--   - если event_ts пустой — берём дату загрузки (_load_ts), чтобы не терять историю.
+--
+-- Важно для демо: считаем, что у клиента не бывает двух разных изменений в один и тот же день.
 TRUNCATE dds.dim_customer, dds.fact_sales;
 
-WITH src AS (
+WITH src AS (  -- 1) Приводим типы, готовим дату изменения (eff_date) и считаем hashdiff атрибутов
   SELECT
     s.customer_id::INT                                         AS customer_bk,
     NULLIF(trim(s.email), '')                                   AS email,
@@ -147,18 +158,17 @@ WITH src AS (
   FROM stg.customers_raw s
   WHERE s.customer_id ~ '^\d+$'
 ),
-ordered AS (
+ordered AS (  -- 2) Сортируем по датам и смотрим "какой hashdiff был до этого" (LAG)
   SELECT *,
           lag(hashdiff) OVER (PARTITION BY customer_bk ORDER BY eff_date) AS prev_hash
   FROM src
 ),
-changes AS (
-  -- только первые состояния и фактические изменения атрибутов
+changes AS (  -- 3) Оставляем только первое состояние и реальные изменения (где hashdiff поменялся)
   SELECT *
   FROM ordered
   WHERE prev_hash IS DISTINCT FROM hashdiff OR prev_hash IS NULL
 ),
-framed AS (
+framed AS (  -- 4) Превращаем изменения в периоды: valid_to = дата следующего изменения (LEAD)
   SELECT
     customer_bk, email, phone, city, hashdiff,
     eff_date                                                         AS valid_from,

@@ -103,7 +103,7 @@ CREATE TABLE dds.dim_product (
     product_name VARCHAR(100) NOT NULL
 );
 
--- dim_customer: измерение "Клиент" с SCD Type 2
+-- dim_customer: измерение "Клиент" с историей (SCD Type 2)
 CREATE TABLE dds.dim_customer (
     customer_sk   BIGSERIAL PRIMARY KEY,
     customer_bk   INT        NOT NULL,                -- бизнес-ключ

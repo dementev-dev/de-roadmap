@@ -29,7 +29,7 @@ BEGIN
     RAISE NOTICE '✅ fact_sales: количество строк совпадает с ods.order_items (%)', actual_count;
 END $$;
 
--- 3. Проверка SCD Type 2: у клиента 101 должно быть ≥2 версий (из-за смены email)
+-- 3. Проверка SCD2 (Type 2): у клиента 101 должно быть ≥2 версий (из-за смены email)
 DO $$
 DECLARE version_count INT;
 BEGIN
@@ -39,10 +39,10 @@ BEGIN
     --
     ASSERT version_count >= 2,
         FORMAT('ОШИБКА: у клиента 101 только %s версия, ожидается ≥2 (должна быть история)', version_count);
-    RAISE NOTICE '✅ SCD Type 2: клиент 101 имеет % версий — история сохранена', version_count;
+    RAISE NOTICE '✅ SCD2: клиент 101 имеет % версий — история сохранена', version_count;
 END $$;
 
--- 4. Проверка SCD Type 2: у каждого клиента ровно одна актуальная версия (valid_to IS NULL)
+-- 4. Проверка SCD2 (Type 2): у каждого клиента ровно одна актуальная версия (valid_to IS NULL)
 DO $$
 DECLARE
     customers_cnt BIGINT;
@@ -56,10 +56,10 @@ BEGIN
     ASSERT current_cnt = customers_cnt,
         FORMAT('ОШИБКА: актуальных строк %s, а уникальных клиентов %s (ожидается 1 current на клиента)',
                current_cnt, customers_cnt);
-    RAISE NOTICE '✅ SCD Type 2: current-строки = количеству клиентов (%)', current_cnt;
+    RAISE NOTICE '✅ SCD2: current-строки = количеству клиентов (%)', current_cnt;
 END $$;
 
--- 5. Проверка SCD Type 2: периоды корректны (valid_to > valid_from или valid_to IS NULL)
+-- 5. Проверка SCD2 (Type 2): периоды корректны (valid_to > valid_from или valid_to IS NULL)
 DO $$
 BEGIN
     ASSERT NOT EXISTS (
@@ -69,5 +69,5 @@ BEGIN
           AND valid_to <= valid_from
     ),
     'ОШИБКА: найдены строки dim_customer с некорректным периодом (valid_to <= valid_from)';
-    RAISE NOTICE '✅ SCD Type 2: периоды valid_from/valid_to корректны';
+    RAISE NOTICE '✅ SCD2: периоды valid_from/valid_to корректны';
 END $$;
