@@ -217,8 +217,16 @@ ORDER BY customer_bk, valid_from;
 
 Если хочется потренироваться глубже:
 
-1. Добавьте в CSV ещё несколько событий смены статуса (например, переход части клиентов из `churned` обратно в `active`).
-2. Загрузите новые строки только в `stg.customer_status_raw`.
+1. Добавьте ещё несколько событий смены статуса (например, переход части клиентов из `churned` обратно в `active`).
+   - Можно дописать в исходный CSV самостоятельно.
+   - Либо взять готовую порцию “для инкремента” из файла `dwh-modeling/data/customer_status_events_increment.csv`.
+2. Загрузите **только новые строки** в `stg.customer_status_raw` (не делайте `TRUNCATE`):
+
+```bash
+cat dwh-modeling/data/customer_status_events_increment.csv | ./postgres-bookings/psql_sh -c \
+  "\\copy stg.customer_status_raw(customer_id,status,event_ts,_load_id,_load_ts) FROM STDIN WITH (FORMAT csv, HEADER true)"
+```
+
 3. Напишите логику инкрементального обновления `dds.dim_customer_status`:
 
 - ориентируйтесь на пример из `03_demo_increment.sql` для `dds.dim_customer`;
