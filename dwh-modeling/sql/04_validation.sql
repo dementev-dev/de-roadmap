@@ -41,3 +41,33 @@ BEGIN
         FORMAT('ОШИБКА: у клиента 101 только %s версия, ожидается ≥2 (должна быть история)', version_count);
     RAISE NOTICE '✅ SCD Type 2: клиент 101 имеет % версий — история сохранена', version_count;
 END $$;
+
+-- 4. Проверка SCD Type 2: у каждого клиента ровно одна актуальная версия (valid_to IS NULL)
+DO $$
+DECLARE
+    customers_cnt BIGINT;
+    current_cnt   BIGINT;
+BEGIN
+    SELECT COUNT(DISTINCT customer_bk) INTO customers_cnt FROM dds.dim_customer;
+    SELECT COUNT(*) INTO current_cnt
+    FROM dds.dim_customer
+    WHERE valid_to IS NULL;
+    --
+    ASSERT current_cnt = customers_cnt,
+        FORMAT('ОШИБКА: актуальных строк %s, а уникальных клиентов %s (ожидается 1 current на клиента)',
+               current_cnt, customers_cnt);
+    RAISE NOTICE '✅ SCD Type 2: current-строки = количеству клиентов (%)', current_cnt;
+END $$;
+
+-- 5. Проверка SCD Type 2: периоды корректны (valid_to > valid_from или valid_to IS NULL)
+DO $$
+BEGIN
+    ASSERT NOT EXISTS (
+        SELECT 1
+        FROM dds.dim_customer
+        WHERE valid_to IS NOT NULL
+          AND valid_to <= valid_from
+    ),
+    'ОШИБКА: найдены строки dim_customer с некорректным периодом (valid_to <= valid_from)';
+    RAISE NOTICE '✅ SCD Type 2: периоды valid_from/valid_to корректны';
+END $$;

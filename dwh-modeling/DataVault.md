@@ -293,7 +293,7 @@ PIT (Point-in-Time) решает очень конкретную боль:
 > «Покажи, как объект выглядел **на дату X**, но так, чтобы запрос был простым».
 
 Если у нас есть несколько сателлитов с историей (например, `sat_customer_info`, `sat_customer_segment`, `sat_customer_risk`), то без PIT любой запрос превращается в пачку условий
-`BETWEEN valid_from AND valid_to` (в effectivity-сателлитах или любых таблицах с периодами действия) или оконных функций.
+`as_of_date >= valid_from AND (valid_to IS NULL OR as_of_date < valid_to)` (в effectivity-сателлитах или любых таблицах с периодами действия) или оконных функций.
 
 **Идея PIT:**
 

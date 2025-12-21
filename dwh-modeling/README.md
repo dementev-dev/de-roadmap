@@ -234,13 +234,12 @@ erDiagram
     
     dim_customer {
         bigint  customer_sk PK    "суррогатный ключ"
-        varchar customer_bk       "бизнес-ключ, напр. '101'"
+        int     customer_bk       "бизнес-ключ, напр. 101"
         varchar customer_name
         varchar email
         varchar city
         date    valid_from        "SCD2: с какой даты запись актуальна"
-        date    valid_to          "SCD2: по какую дату актуальна"
-        boolean is_current        "SCD2: текущая версия?"
+        date    valid_to          "SCD2: по какую дату актуальна (NULL = сейчас)"
     }
     
     dim_product {
@@ -269,15 +268,16 @@ erDiagram
 
 В `dim_customer` это будет **три строки**:
 
-| customer_sk | customer_bk | email | city | valid_from | valid_to | is_current |
-|-------------|-------------|-------|------|------------|----------|------------|
-| 1001 | 101 | a@ex.com | Москва | 2023-01-01 | 2023-05-15 | false |
-| 1002 | 101 | b@ex.com | Москва | 2023-05-16 | 2023-09-30 | false |
-| 1003 | 101 | b@ex.com | СПб | 2023-10-01 | 9999-12-31 | true |
+| customer_sk | customer_bk | email | city | valid_from | valid_to |
+|-------------|-------------|-------|------|------------|----------|
+| 1001 | 101 | a@ex.com | Москва | 2023-01-01 | 2023-05-16 |
+| 1002 | 101 | b@ex.com | Москва | 2023-05-16 | 2023-10-01 |
+| 1003 | 101 | b@ex.com | СПб | 2023-10-01 | NULL |
 
 Когда мы считаем продажи за **12 января** — джойним `fact_sales` к той строке `dim_customer`, где:  
 ```sql
-fact_sales.order_date BETWEEN dim_customer.valid_from AND dim_customer.valid_to
+fact_sales.order_date >= dim_customer.valid_from
+AND (dim_customer.valid_to IS NULL OR fact_sales.order_date < dim_customer.valid_to)
 ```
 и получаем актуальный на тот день email и город.
 
@@ -554,8 +554,8 @@ JOIN dds.dim_product p
   ON f.product_sk = p.product_sk
 JOIN dds.dim_customer c
   ON f.customer_sk = c.customer_sk
-  AND f.order_date BETWEEN c.valid_from AND c.valid_to  -- SCD!
-WHERE c.is_current = true  -- или не фильтровать — тогда будет история
+  AND f.order_date >= c.valid_from
+  AND (c.valid_to IS NULL OR f.order_date < c.valid_to)  -- SCD!
 GROUP BY d.date_actual, p.product_name, c.customer_segment;
 ```
 
@@ -775,10 +775,11 @@ SELECT 'OK' WHERE EXISTS (
 
 [`customers.csv`](data/customers.csv):
 ```csv
-customer_id,email,phone,city
-101,a@ex.com,700,Москва
-101,b@ex.com,700,Москва
-102,c@ex.com,701,СПб
+customer_id,email,phone,city,event_ts,_load_id,load_ts
+101,a@ex.com,700,Москва,2024-01-01,batch_20240101_0800,2024-01-01 08:00
+102,c@ex.com,701,СПб,2024-01-01,batch_20240101_0800,2024-01-01 08:00
+101,b@ex.com,700,Москва,2024-05-16,batch_20240516_0800,2024-05-16 08:00
+101,b@ex.com,700,Санкт-Петербург,2024-10-01,batch_20241001_0800,2024-10-01 08:00
 ```
 
 [`orders.csv`](data/orders.csv):
@@ -807,7 +808,8 @@ product_id,name
 ```csv
 product_id,valid_from,valid_to,price
 9001,2023-12-01,2024-01-31,100
-9001,2024-02-01,2999-12-31,110
+9001,2024-02-01,,110
+9002,2023-01-01,,50
 ```
 
 >  📂 Все SQL-скрипты для построения хранилища находятся в папке [`sql/`](sql/).
@@ -824,13 +826,12 @@ product_id,valid_from,valid_to,price
 -- DDS: измерение клиента (SCD Type 2)
 CREATE TABLE dds.dim_customer (
     customer_sk   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    customer_bk   VARCHAR(50) NOT NULL,   -- напр. '101'
+    customer_bk   INT NOT NULL,           -- напр. 101
     email         VARCHAR(100),
     phone         VARCHAR(20),
     city          VARCHAR(50),
     valid_from    DATE NOT NULL,
-    valid_to      DATE DEFAULT '9999-12-31',
-    is_current    BOOLEAN NOT NULL DEFAULT TRUE
+    valid_to      DATE
 );
 
 -- DDS: факт продаж (гранулярность: строка заказа)

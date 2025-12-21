@@ -31,7 +31,7 @@
 
 ```text
 customer_id,status,event_ts,_load_id,load_ts
-101,new,2024-01-01 09:00:00,batch_20250405_0800,2025-04-05 08:00:00
+101,new,2024-01-01 09:00:00,batch_20240101_1000,2024-01-01 10:00:00
 ...
 ```
 
@@ -117,7 +117,6 @@ ORDER BY customer_id, event_ts;
 - `status` — статус клиента;
 - `hashdiff` — хэш от атрибутов (здесь достаточно самого `status`);
 - `valid_from` / `valid_to` — период, когда статус был актуален;
-- `is_current` — флаг актуальной строки;
 - `created_at` / `updated_at` — технические поля.
 
 ### 4.1. Начальная загрузка SCD2
@@ -131,18 +130,18 @@ ORDER BY customer_id, event_ts;
    - `event_ts` (как «время начала действия статуса»),
    - `hashdiff` (например, `md5(status)`; можно вынести расчёт в отдельную функцию по аналогии с `dds.customer_hash` для клиентов).
 
-2. Для каждого клиента отсортируйте события по `event_ts` и с помощью `LEAD()` посчитайте:
+2. Для каждого клиента отсортируйте события по `event_ts` и с помощью `LEAD()` посчитайте (в учебном варианте считаем, что обновление DWH идёт раз в день, поэтому используем `DATE`):
 
-   - `valid_from` — текущее `event_ts`,
-   - `valid_to` — следующее `event_ts - 1 second` (или `9999-12-31`, если следующего нет).
+   - `valid_from` — `event_ts::date`,
+   - `valid_to` — следующий `event_ts::date` (а у последней версии `valid_to = NULL`).
 
-3. Вставьте получившиеся строки в `dds.dim_customer_status`. У актуальной строки для каждого клиента задайте `is_current = TRUE` (например, там, где `valid_to = '9999-12-31'`), у остальных — `FALSE`:
+3. Вставьте получившиеся строки в `dds.dim_customer_status`. Актуальная строка для клиента — та, где `valid_to IS NULL`.
 
 ```sql
 INSERT INTO dds.dim_customer_status (
     customer_bk, status, hashdiff,
     valid_from, valid_to,
-    is_current, created_at, updated_at
+    created_at, updated_at
 )
 SELECT
     ...
@@ -159,7 +158,7 @@ ORDER BY customer_bk, valid_from;
 Ожидаемое поведение:
 
 - у клиента 101 несколько строк с разными статусами и непересекающимися периодами;
-- `is_current = TRUE` только у самой свежей строки для каждого клиента.
+- `valid_to IS NULL` только у самой свежей строки для каждого клиента.
 
 ### 4.2. Проверка себя
 
@@ -182,8 +181,8 @@ ORDER BY customer_bk, valid_from;
 
 - ориентируйтесь на пример из `03_demo_increment.sql` для `dds.dim_customer`;
 - важно:
-  - корректно «закрыть» старую актуальную строку (`valid_to`, `is_current = FALSE`);
-  - вставить новую строку с `is_current = TRUE`.
+  - корректно «закрыть» старую актуальную строку (заполнить `valid_to` датой начала новой версии);
+  - вставить новую строку с `valid_to = NULL`.
 
 Эта часть особенно полезна, если вы хотите почувствовать, как SCD2 живёт в реальном DWH.
 

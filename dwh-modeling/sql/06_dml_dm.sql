@@ -55,6 +55,5 @@ SELECT
 FROM dds.fact_sales f
 JOIN dds.dim_date d ON f.date_key = d.date_key
 JOIN dds.dim_customer c ON f.customer_sk = c.customer_sk
--- Здесь НЕ фильтруем по is_current: нужна вся история фактов
+-- Здесь не фильтруем по valid_to: нужна вся история фактов
 GROUP BY c.customer_bk;
-

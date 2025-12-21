@@ -111,9 +111,8 @@ CREATE TABLE dds.dim_customer (
     phone         TEXT,
     city          TEXT,
     hashdiff      TEXT        NOT NULL,               -- md5 по нормализованным атрибутам
-    valid_from    TIMESTAMP   NOT NULL,
-    valid_to      TIMESTAMP   NOT NULL,
-    is_current    BOOLEAN     NOT NULL DEFAULT TRUE,
+    valid_from    DATE        NOT NULL,
+    valid_to      DATE,
     created_at    TIMESTAMP   NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMP   NOT NULL DEFAULT NOW()
 );
@@ -123,7 +122,7 @@ ALTER TABLE dds.dim_customer
     ADD CONSTRAINT uq_dim_customer_bk_from UNIQUE (customer_bk, valid_from);
 
 -- ускорители
-CREATE INDEX ix_dim_customer_bk_current ON dds.dim_customer (customer_bk) WHERE is_current;
+CREATE INDEX ix_dim_customer_bk_current ON dds.dim_customer (customer_bk) WHERE valid_to IS NULL;
 CREATE INDEX ix_dim_customer_bk_from_to ON dds.dim_customer (customer_bk, valid_from, valid_to);
 
 -- fact_sales: факт "Продажи"

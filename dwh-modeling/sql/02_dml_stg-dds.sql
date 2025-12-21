@@ -13,10 +13,10 @@ DELETE FROM stg.products_raw;
 
 -- STG (пример вставки с метками времени)
 INSERT INTO stg.customers_raw (_load_id, _load_ts, event_ts, customer_id, email, phone, city) VALUES
-('batch_20250405_0800', '2025-04-05 08:00', NULL,  '101','a@ex.com','700','Москва'),
-('batch_20250405_0800', '2025-04-05 08:00', NULL,  '102','c@ex.com','701','СПб'),
-('batch_20250405_1200', '2025-04-05 12:00', NULL,  '101','b@ex.com','700','Москва'),
-('batch_20250405_1800', '2025-04-05 18:00', NULL,  '101','b@ex.com','700','Санкт-Петербург');
+('batch_20240101_0800', '2024-01-01 08:00', '2024-01-01',  '101','a@ex.com','700','Москва'),
+('batch_20240101_0800', '2024-01-01 08:00', '2024-01-01',  '102','c@ex.com','701','СПб'),
+('batch_20240516_0800', '2024-05-16 08:00', '2024-05-16',  '101','b@ex.com','700','Москва'),
+('batch_20241001_0800', '2024-10-01 08:00', '2024-10-01',  '101','b@ex.com','700','Санкт-Петербург');
 
 
 INSERT INTO stg.orders_raw (order_id, order_date, customer_id) VALUES
@@ -45,7 +45,7 @@ SELECT
 FROM stg.orders_raw
 WHERE order_date IS NOT NULL AND customer_id ~ '^\d+$';
 
--- берём по BK самую позднюю запись (event_ts > _load_ts > _load_id)
+-- берём по BK самую позднюю запись (по дате события, иначе по дате загрузки)
 WITH src AS (
   SELECT
       s.customer_id::INT                                     AS customer_id,
@@ -55,21 +55,20 @@ WITH src AS (
       NULLIF(s.event_ts, '')::timestamp                      AS event_ts,
       s._load_id,
       s._load_ts,
-      COALESCE(NULLIF(s.event_ts, '')::timestamp, s._load_ts,
-               to_timestamp(regexp_replace(s._load_id,'^batch_',''),'YYYYMMDD_HH24MI'))
-          AS eff_ts
+      COALESCE(NULLIF(s.event_ts, '')::date, s._load_ts::date) AS eff_date
   FROM stg.customers_raw s
   WHERE s.customer_id ~ '^\d+$'
 ),
-last_per_bk AS (
-  SELECT DISTINCT ON (customer_id)
-         customer_id, email, phone, city, event_ts, _load_id, _load_ts
+ranked AS (
+  SELECT
+         customer_id, email, phone, city, event_ts, _load_id, _load_ts,
+         row_number() OVER (PARTITION BY customer_id ORDER BY eff_date DESC, _load_ts DESC) AS rn
   FROM src
-  ORDER BY customer_id, eff_ts DESC, _load_ts DESC
 )
 INSERT INTO ods.customers (customer_id, email, phone, city, event_ts, _load_id, _load_ts)
 SELECT customer_id, email, phone, city, event_ts, _load_id, _load_ts
-FROM last_per_bk;
+FROM ranked
+WHERE rn = 1;
 
 INSERT INTO ods.order_items (order_item_id, order_id, product_id, qty, price_at_sale)
 SELECT
@@ -143,16 +142,14 @@ WITH src AS (
     NULLIF(trim(s.email), '')                                   AS email,
     NULLIF(trim(s.phone), '')                                   AS phone,
     NULLIF(trim(s.city),  '')                                   AS city,
-    COALESCE(NULLIF(s.event_ts,'')::timestamp, s._load_ts,
-              to_timestamp(regexp_replace(s._load_id,'^batch_',''),'YYYYMMDD_HH24MI')) AS eff_ts,
+    COALESCE(NULLIF(s.event_ts, '')::date, s._load_ts::date)     AS eff_date,
     dds.customer_hash(s.email, s.phone, s.city)                 AS hashdiff
   FROM stg.customers_raw s
   WHERE s.customer_id ~ '^\d+$'
 ),
 ordered AS (
   SELECT *,
-          lag(hashdiff) OVER (PARTITION BY customer_bk ORDER BY eff_ts) AS prev_hash,
-          row_number()  OVER (PARTITION BY customer_bk ORDER BY eff_ts) AS rn
+          lag(hashdiff) OVER (PARTITION BY customer_bk ORDER BY eff_date) AS prev_hash
   FROM src
 ),
 changes AS (
@@ -164,20 +161,19 @@ changes AS (
 framed AS (
   SELECT
     customer_bk, email, phone, city, hashdiff,
-    CASE WHEN rn = 1 THEN timestamp '1900-01-01' ELSE eff_ts END        AS valid_from,  -- первая версия: техническое "начало истории"
-    lead(eff_ts) OVER (PARTITION BY customer_bk ORDER BY eff_ts)        AS next_ts
+    eff_date                                                         AS valid_from,
+    lead(eff_date) OVER (PARTITION BY customer_bk ORDER BY eff_date)  AS valid_to
   FROM changes
 )
 INSERT INTO dds.dim_customer (
     customer_bk, email, phone, city, hashdiff,
-    valid_from,                                           valid_to,                       is_current,
+    valid_from,                                           valid_to,
     created_at, updated_at
 )
 SELECT
     customer_bk, email, phone, city, hashdiff,
     valid_from,
-    COALESCE(next_ts - interval '1 second', timestamp '9999-12-31') AS valid_to,
-    (next_ts IS NULL)                                               AS is_current,
+    valid_to,
     now(), now()
 FROM framed
 ORDER BY customer_bk, valid_from;
@@ -200,10 +196,11 @@ JOIN ods.products p     ON oi.product_id = p.product_id
 JOIN dds.dim_product dp ON p.product_id = dp.product_bk
 JOIN dds.dim_customer dc
   ON o.customer_id = dc.customer_bk
- AND o.order_date::timestamp BETWEEN dc.valid_from AND dc.valid_to;
+ AND o.order_date >= dc.valid_from
+ AND (dc.valid_to IS NULL OR o.order_date < dc.valid_to);
 
 -- 7. Проверка — вывод итогов (не часть ETL, но полезно для отладки)
 -- В реальном пайплайне такие SELECT выносятся в отдельные скрипты или дашборды
 
- SELECT 'dim_customer count = ' || COUNT(*) FROM dds.dim_customer WHERE is_current ;
+ SELECT 'dim_customer current = ' || COUNT(*) FROM dds.dim_customer WHERE valid_to IS NULL;
  SELECT 'fact_sales count = ' || COUNT(*) FROM dds.fact_sales;

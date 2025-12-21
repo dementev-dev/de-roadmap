@@ -34,10 +34,15 @@ CREATE TABLE dds.dim_customer_status (
     customer_bk        INT         NOT NULL,
     status             VARCHAR(20) NOT NULL,
     hashdiff           TEXT        NOT NULL,
-    valid_from         TIMESTAMP   NOT NULL,
-    valid_to           TIMESTAMP   NOT NULL,
-    is_current         BOOLEAN     NOT NULL DEFAULT TRUE,
+    valid_from         DATE        NOT NULL,
+    valid_to           DATE,
     created_at         TIMESTAMP   NOT NULL DEFAULT NOW(),
     updated_at         TIMESTAMP   NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE dds.dim_customer_status
+    ADD CONSTRAINT uq_dim_customer_status_bk_from UNIQUE (customer_bk, valid_from);
+
+CREATE INDEX ix_dim_customer_status_bk_current
+    ON dds.dim_customer_status (customer_bk)
+    WHERE valid_to IS NULL;
