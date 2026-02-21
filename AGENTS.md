@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 - Root `README.md` describes the learning roadmap (RU).
-- `dwh-modeling/` contains the article and demo DWH model; SQL lives in `dwh-modeling/sql` as ordered scripts `01_...sql`–`06_...sql`.
+- `dwh-modeling/` contains the article and demo DWH model; SQL lives in `dwh-modeling/sql` as ordered scripts `01_...sql`–`09_...sql` (07–09 are homework DDL, template and solution).
 - `postgres-bookings/` is a Dockerized PostgreSQL + demo “bookings” DB; start it first, then apply DWH scripts against the `demo` database.
 
 ## Build, Test, and Development Commands
@@ -26,8 +26,10 @@
 - For `postgres-bookings`, after modifications run `docker compose up -d && ./psql_sh` and verify simple queries such as `SELECT COUNT(*) FROM bookings.flights;`.
 
 ## Commit & Pull Request Guidelines
-- Commit messages are short, imperative or descriptive phrases (often in Russian), e.g. `Добавлено оглавление`, `Переработка структуры`; group related edits into a single commit.
-- Pull requests should focus on one topic, include a brief context, list of changes, and manual steps to reproduce or validate (commands you ran, expected results).
+
+**Required:** Read [COMMIT_RULES.md](COMMIT_RULES.md) before making commits.
+
+Pull requests should focus on one topic, include a brief context, list of changes, and manual steps to reproduce or validate (commands you ran, expected results).
 
 ## Security & Configuration Tips
 - Do not commit personal `.env` files or credentials; use local overrides only.

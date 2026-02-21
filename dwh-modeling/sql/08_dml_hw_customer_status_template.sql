@@ -38,11 +38,6 @@
 -- Можно ориентироваться на примеры в 03_demo_increment.sql.
 
 -- 4. DM: витрина статусов клиентов по датам (по желанию)
--- Пример целевой структуры:
--- CREATE TABLE dm.mart_customer_status_daily (
---     date_actual    DATE        NOT NULL,
---     status         VARCHAR(20) NOT NULL,
---     customers_cnt  INT         NOT NULL
--- );
+-- DDL витрины уже создан в 07_ddl_hw_customer_status.sql (dm.mart_customer_status_daily).
 -- Идея: на каждую дату взять актуальный статус клиента
 -- через JOIN dds.dim_customer_status + dds.dim_date.

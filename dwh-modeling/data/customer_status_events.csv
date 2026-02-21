@@ -1,4 +1,4 @@
-customer_id,status,event_ts,_load_id,load_ts
+customer_id,status,event_ts,_load_id,_load_ts
 101,new,2024-01-01 09:00:00,batch_20240101_1000,2024-01-01 10:00:00
 101,active,2024-02-15 10:30:00,batch_20240215_1100,2024-02-15 11:00:00
 101,vip,2024-05-10 11:00:00,batch_20240510_1200,2024-05-10 12:00:00

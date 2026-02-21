@@ -46,3 +46,11 @@ ALTER TABLE dds.dim_customer_status
 CREATE INDEX ix_dim_customer_status_bk_current
     ON dds.dim_customer_status (customer_bk)
     WHERE valid_to IS NULL;
+
+-- 4. DM: витрина статусов клиентов по датам (опциональная часть домашки)
+DROP TABLE IF EXISTS dm.mart_customer_status_daily;
+CREATE TABLE dm.mart_customer_status_daily (
+    date_actual    DATE        NOT NULL,
+    status         VARCHAR(20) NOT NULL,
+    customers_cnt  INT         NOT NULL
+);
