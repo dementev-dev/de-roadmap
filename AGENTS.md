@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 - Root `README.md` describes the learning roadmap (RU).
-- `dwh-modeling/` contains the article and demo DWH model; SQL lives in `dwh-modeling/sql` as ordered scripts `01_...sql`–`06_...sql`.
+- `dwh-modeling/` contains the article and demo DWH model; SQL lives in `dwh-modeling/sql` as ordered scripts `01_...sql`–`09_...sql` (07–09 are homework DDL, template and solution).
 - `postgres-bookings/` is a Dockerized PostgreSQL + demo “bookings” DB; start it first, then apply DWH scripts against the `demo` database.
 
 ## Build, Test, and Development Commands

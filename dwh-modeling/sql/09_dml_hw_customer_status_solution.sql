@@ -147,6 +147,10 @@ SELECT * FROM dds.dim_customer_status ORDER BY customer_bk, valid_from;
 --   - клиент 104: новый клиент, статус new
 
 -- 3.0) Новые события в STG
+-- При повторном запуске эти строки добавятся в STG ещё раз (дубли).
+-- Для демо это не страшно: ODS-вставка ниже использует ON CONFLICT DO NOTHING,
+-- а SCD2-блок защищён от повторных вставок через NOT EXISTS.
+-- В продакшене STG обычно очищается перед каждой загрузкой (TRUNCATE / партиция по дате).
 INSERT INTO stg.customer_status_raw (customer_id, status, event_ts, _load_id, _load_ts) VALUES
 ('101','active','2024-11-15 09:00:00','batch_20241115_1000','2024-11-15 10:00:00'),
 ('102','active','2024-05-05 09:30:00','batch_20240505_1000','2024-05-05 10:00:00'),
@@ -305,7 +309,9 @@ TRUNCATE dm.mart_customer_status_daily;
 WITH bounds AS (
     SELECT
         min(valid_from)                                           AS date_from,
-        max(coalesce(valid_to, valid_from))                       AS date_to
+        -- CURRENT_DATE для открытых интервалов (valid_to IS NULL = текущий статус),
+        -- иначе витрина не покроет даты после последней смены статуса.
+        max(coalesce(valid_to, CURRENT_DATE))                     AS date_to
     FROM dds.dim_customer_status
 )
 INSERT INTO dm.mart_customer_status_daily (

@@ -180,7 +180,7 @@ flowchart TD
 |---------|------------|
 | `dds.dim_customer` | Измерение «Клиент» с историей (SCD Type 2) |
 | `dds.dim_product` | Измерение «Товар» |
-| `dds.dim_date` | Готовый календарь на 10 лет вперёд (день/неделя/месяц/квартал) |
+| `dds.dim_date` | Готовый календарь на 5 лет вперёд (день/неделя/месяц/квартал) |
 | `dds.fact_sales` | Факт «Продажа» — строка заказа с суммой и количеством |
 
 💡 **Суррогатный ключ (Surrogate Key, SK)** — это `BIGINT`, который мы генерируем сами (например, `customer_sk = 1001`).  
@@ -558,8 +558,8 @@ JOIN dds.dim_product p
   ON f.product_sk = p.product_sk
 JOIN dds.dim_customer c
   ON f.customer_sk = c.customer_sk
-  AND f.order_date >= c.valid_from
-  AND (c.valid_to IS NULL OR f.order_date < c.valid_to)  -- SCD!
+  AND d.date_actual >= c.valid_from
+  AND (c.valid_to IS NULL OR d.date_actual < c.valid_to)  -- SCD!
 GROUP BY d.date_actual, p.product_name, c.customer_segment;
 ```
 
