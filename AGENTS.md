@@ -26,8 +26,10 @@
 - For `postgres-bookings`, after modifications run `docker compose up -d && ./psql_sh` and verify simple queries such as `SELECT COUNT(*) FROM bookings.flights;`.
 
 ## Commit & Pull Request Guidelines
-- Commit messages are short, imperative or descriptive phrases (often in Russian), e.g. `Добавлено оглавление`, `Переработка структуры`; group related edits into a single commit.
-- Pull requests should focus on one topic, include a brief context, list of changes, and manual steps to reproduce or validate (commands you ran, expected results).
+
+**Required:** Read [COMMIT_RULES.md](COMMIT_RULES.md) before making commits.
+
+Pull requests should focus on one topic, include a brief context, list of changes, and manual steps to reproduce or validate (commands you ran, expected results).
 
 ## Security & Configuration Tips
 - Do not commit personal `.env` files or credentials; use local overrides only.
