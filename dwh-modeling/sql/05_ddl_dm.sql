@@ -21,7 +21,7 @@ CREATE TABLE dm.mart_customer_360 (
     customer_bk      INT NOT NULL,
     first_order_date DATE,
     last_order_date  DATE,
-    total_orders     INT NOT NULL,
+    total_line_items     INT NOT NULL,
     total_items      INT NOT NULL,
     lifetime_value   NUMERIC(18,2) NOT NULL,
     last_email       VARCHAR(100),

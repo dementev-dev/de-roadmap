@@ -30,7 +30,7 @@
 Структура файла:
 
 ```text
-customer_id,status,event_ts,_load_id,load_ts
+customer_id,status,event_ts,_load_id,_load_ts
 101,new,2024-01-01 09:00:00,batch_20240101_1000,2024-01-01 10:00:00
 ...
 ```
@@ -41,7 +41,7 @@ customer_id,status,event_ts,_load_id,load_ts
 - `status` — статус клиента в CRM (`new`, `active`, `vip`, `churned`);
 - `event_ts` — момент, когда статус сменился в CRM;
 - `_load_id` — идентификатор батча загрузки;
-- `load_ts` — момент, когда данные попали в DWH (в таблицах STG/ODS эта колонка будет называться `_load_ts`, но по смыслу это то же самое время загрузки).
+- `_load_ts` — момент, когда данные попали в DWH.
 
 Файл содержит несколько клиентов и несколько смен статуса по каждому — этого достаточно, чтобы отработать SCD2.
 
@@ -94,13 +94,13 @@ INSERT INTO stg.customer_status_raw (customer_id, status, event_ts, _load_id, _l
 ('101','churned','2024-09-01 12:15:00','batch_20240901_1300','2024-09-01 13:00:00');
 ```
 
-> 💡 Здесь `_load_ts` — это время загрузки (в CSV оно называется `load_ts`).
+> 💡 Здесь `_load_ts` — это время загрузки.
 
 #### Вариант B: загрузить CSV
 
 Можно загрузить файл `dwh-modeling/data/customer_status_events.csv` в таблицу `stg.customer_status_raw`:
 
-- **Через DBeaver**: Import Data → CSV → `stg.customer_status_raw` (колонку `load_ts` маппить в `_load_ts`).
+- **Через DBeaver**: Import Data → CSV → `stg.customer_status_raw`.
 - **Через `psql` в контейнере (`./psql_sh`)**: без установки `psql` на хост.
 
 Способ: передайте CSV в `psql` через STDIN и выполните `\copy ... FROM STDIN`:
@@ -126,7 +126,7 @@ SELECT * FROM stg.customer_status_raw LIMIT 10;
 - привести:
   - `customer_id` → `INT`,
   - `status` → `VARCHAR(20)` (можно оставить как есть),
-  - `event_ts` и `load_ts` → `TIMESTAMP` (в DWH-таблицах эта колонка будет лежать как `_load_ts`);
+  - `event_ts` и `_load_ts` → `TIMESTAMP`;
 - аккуратно обработать возможные пустые значения (если бы они были);
 - заполнить `_load_id` и `_load_ts` в `ods.customer_status`.
 
@@ -292,3 +292,11 @@ ORDER BY date_actual, status;
    - при желании — собрать простую витрину в `dm`.
 
 Если что‑то не получается — можно разбирать решения по шагам вместе с ментором: от простого `SELECT` из STG до полноценного SCD2 в DDS.
+
+---
+
+## 8. Эталонное решение
+
+Когда выполните домашку и захотите сверить результат — готовое решение лежит в файле [`09_dml_hw_customer_status_solution.sql`](sql/09_dml_hw_customer_status_solution.sql).
+
+Постарайтесь не подглядывать до того, как напишете свой вариант — основная ценность задания именно в самостоятельном разборе.

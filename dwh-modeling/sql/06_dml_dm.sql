@@ -33,14 +33,14 @@ GROUP BY d.date_actual, p.product_name,
 -- Считаем суммы по всей истории его покупок
 INSERT INTO dm.mart_customer_360 (
     customer_bk, first_order_date, last_order_date,
-    total_orders, total_items, lifetime_value,
+    total_line_items, total_items, lifetime_value,
     last_email, last_city
 )
 SELECT
     c.customer_bk,
     MIN(d.date_actual) AS first_order_date,
     MAX(d.date_actual) AS last_order_date,
-    COUNT(DISTINCT f.sale_id) AS total_orders,  -- считаем строки факта (продажи), не бизнес-заказы
+    COUNT(DISTINCT f.sale_id) AS total_line_items,  -- строки факта (позиции продаж), не бизнес-заказы
     SUM(f.quantity) AS total_items,
     SUM(f.amount) AS lifetime_value,
     -- Берём самый свежий email и город клиента
