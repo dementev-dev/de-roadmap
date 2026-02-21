@@ -2,15 +2,19 @@
 -- 09_dml_hw_customer_status_solution.sql
 -- Решение домашки: статусы клиента (STG -> ODS -> DDS SCD2 -> DM)
 --
+-- Это ЭТАЛОННОЕ РЕШЕНИЕ. Если вы ещё не пробовали решить домашку сами -
+-- вернитесь к заданию (Homework_Customer_Status_DDS_DM.md) и шаблону (08_dml_hw_customer_status_template.sql).
+-- Основная ценность задания - в самостоятельном разборе.
+--
 -- Что делает этот файл:
 --   1) Перекладывает события статусов в ODS (приводит типы, чистит пустое).
 --   2) Строит DDS-измерение со "встроенной историей" (SCD2): периоды valid_from/valid_to.
---   3) Показывает пример обновления DDS маленькой порцией (инкремент): закрыть старое + вставить новое.
+--   3) Загружает инкрементальную порцию событий и обновляет ODS + DDS.
 --   4) Собирает простую витрину в DM: сколько клиентов в каком статусе по дням.
 --
 -- Как запускать:
 --   - для первого знакомства можно запускать файл целиком;
---   - если хотите потренировать инкремент (п.3): добавьте новые события -> обновите ODS -> запустите блок 3 ещё раз.
+--   - если хотите потренировать инкремент (п.3): добавьте свои события -> запустите блок 3 ещё раз.
 --
 -- Важно:
 --   - здесь часто используется TRUNCATE (полная очистка), чтобы было легко повторять домашку;
@@ -18,9 +22,10 @@
 --
 -- Предусловия (DDL + данные в STG):
 --   1) dwh-modeling/sql/01_ddl_stg-dds.sql
---   2) dwh-modeling/sql/05_ddl_dm.sql
---   3) dwh-modeling/sql/07_ddl_hw_customer_status.sql
---   4) stg.customer_status_raw заполнена (см. dwh-modeling/Homework_Customer_Status_DDS_DM.md)
+--   2) dwh-modeling/sql/02_dml_stg-dds.sql  (нужен dim_date)
+--   3) dwh-modeling/sql/05_ddl_dm.sql
+--   4) dwh-modeling/sql/07_ddl_hw_customer_status.sql
+--   5) stg.customer_status_raw заполнена (см. dwh-modeling/Homework_Customer_Status_DDS_DM.md)
 -- ===============================================
 
 -- ==========================================================
@@ -47,6 +52,10 @@ FROM stg.customer_status_raw s
 WHERE s.customer_id ~ '^\d+$'
   AND NULLIF(trim(s.event_ts), '') IS NOT NULL
   AND NULLIF(trim(s.status), '') IS NOT NULL;
+
+-- Проверка: что получилось в ODS
+SELECT 'ods.customer_status count = ' || COUNT(*) FROM ods.customer_status;
+SELECT * FROM ods.customer_status ORDER BY customer_id, event_ts;
 
 -- ==========================================================
 -- 2) DDS: начальная загрузка SCD2 (full refresh)
@@ -116,29 +125,62 @@ SELECT
 FROM framed
 ORDER BY customer_bk, valid_from;
 
+-- Проверка: периоды в DDS (у клиента 101 должно быть 4 строки: new -> active -> vip -> churned)
+SELECT 'dim_customer_status count = ' || COUNT(*) FROM dds.dim_customer_status;
+SELECT * FROM dds.dim_customer_status ORDER BY customer_bk, valid_from;
+
 -- ==========================================================
--- 3) DDS: инкрементальная загрузка SCD2 (по последним событиям)
+-- 3) Инкрементальная загрузка: STG -> ODS -> DDS
 -- ==========================================================
 
--- Этот блок нужен, чтобы показать "как это обычно обновляют":
--- после новой порции событий мы:
+-- Имитируем приход новой порции событий (customer_status_events_increment.csv):
+--   - клиент 101: churned -> active (вернулся)
+--   - клиент 102: churned -> active
+--   - клиент 103: new -> active
+--   - клиент 104: новый клиент, статус new
+
+-- 3.0) Новые события в STG
+INSERT INTO stg.customer_status_raw (customer_id, status, event_ts, _load_id, _load_ts) VALUES
+('101','active','2024-11-15 09:00:00','batch_20241115_1000','2024-11-15 10:00:00'),
+('102','active','2024-05-05 09:30:00','batch_20240505_1000','2024-05-05 10:00:00'),
+('103','active','2024-03-20 12:00:00','batch_20240320_1300','2024-03-20 13:00:00'),
+('104','new',   '2024-06-01 08:00:00','batch_20240601_0900','2024-06-01 09:00:00');
+
+-- 3.1) UPSERT в ODS: добавляем новые события (не трогаем старые)
+--   PK в ods.customer_status = (customer_id, event_ts), поэтому каждое уникальное
+--   событие встаёт отдельной строкой. Дубли (одинаковый customer_id + event_ts) игнорируем.
+INSERT INTO ods.customer_status (
+    customer_id, status, event_ts, _load_id, _load_ts
+)
+SELECT
+    s.customer_id::INT,
+    NULLIF(trim(s.status), ''),
+    NULLIF(trim(s.event_ts), '')::TIMESTAMP,
+    s._load_id,
+    COALESCE(s._load_ts, now())
+FROM stg.customer_status_raw s
+WHERE s.customer_id ~ '^\d+$'
+  AND NULLIF(trim(s.event_ts), '') IS NOT NULL
+  AND NULLIF(trim(s.status), '') IS NOT NULL
+ON CONFLICT (customer_id, event_ts) DO NOTHING;
+
+-- Проверка: в ODS должны появиться новые строки
+SELECT 'ods.customer_status after increment = ' || COUNT(*) FROM ods.customer_status;
+
+-- 3.2) Инкрементальное обновление DDS (SCD2)
+-- Идея:
 --   1) берём по каждому клиенту самое позднее событие из ODS;
---   2) сравниваем его с текущей версией в DDS (valid_to IS NULL);
---   3) если статус изменился — закрываем старую версию и вставляем новую.
+--   2) сравниваем с текущей версией в DDS (valid_to IS NULL);
+--   3) если статус изменился - закрываем старую версию и вставляем новую.
 --
--- Ограничение учебного варианта (в домашке можно игнорировать):
---   - если вы добавили событие "задним числом" со старой датой, этот блок не пересоберёт всю историю.
---     Для такого кейса обычно делают отдельную логику или full refresh.
---
--- Примечание:
---   - в этом файле блок 2 (full refresh) запускается раньше, поэтому сразу после него
---     блок 3, скорее всего, ничего не изменит. Зато его можно повторять после новых событий.
+-- Ограничение учебного варианта:
+--   - если добавили событие "задним числом" со старой датой, этот блок не пересоберёт всю историю.
+--     Для такого кейса обычно делают full refresh (блок 2).
 
 BEGIN;
-    -- 3.1) Закрываем предыдущую актуальную версию
+    -- 3.2a) Закрываем предыдущую актуальную версию
     WITH ranked AS (
-        -- ranked: выбираем "самое свежее" событие на клиента.
-        -- Если event_ts одинаковый, берём то, что загрузилось позже (_load_ts).
+        -- ranked: выбираем "самое свежее" событие на клиента
         SELECT
             customer_id                                          AS customer_bk,
             status,
@@ -155,8 +197,8 @@ BEGIN;
         -- delta: ровно одна строка на клиента (самое свежее событие)
         SELECT * FROM ranked WHERE rn = 1
     ),
-    current AS (
-        -- current: текущие версии в DDS (valid_to IS NULL)
+    current_ver AS (
+        -- current_ver: текущие версии в DDS (valid_to IS NULL)
         SELECT d.*
         FROM dds.dim_customer_status d
         WHERE d.valid_to IS NULL
@@ -172,7 +214,7 @@ BEGIN;
             t.eff_date,
             c.customer_status_sk
         FROM delta t
-        JOIN current c
+        JOIN current_ver c
           ON c.customer_bk = t.customer_bk
         WHERE c.hashdiff <> t.hashdiff
           AND t.eff_date > c.valid_from  -- не создаём период нулевой/отрицательной длины
@@ -180,9 +222,9 @@ BEGIN;
      WHERE d.customer_status_sk = x.customer_status_sk
        AND d.valid_to IS NULL;
 
-    -- 3.2) Вставляем новую версию
+    -- 3.2b) Вставляем новую версию
     WITH ranked AS (
-        -- ranked/delta/current повторяем отдельно, чтобы блок INSERT читался отдельно от UPDATE
+        -- ranked/delta/current_ver повторяем отдельно, чтобы блок INSERT читался отдельно от UPDATE
         SELECT
             customer_id                                          AS customer_bk,
             status,
@@ -198,14 +240,14 @@ BEGIN;
     delta AS (
         SELECT * FROM ranked WHERE rn = 1
     ),
-    current AS (
+    current_ver AS (
         SELECT d.*
         FROM dds.dim_customer_status d
         WHERE d.valid_to IS NULL
     ),
     to_insert AS (
         -- to_insert: кого "вставляем":
-        --   1) новый клиент (в current нет строки);
+        --   1) новый клиент (в current_ver нет строки);
         --   2) изменившийся клиент (статус поменялся).
         SELECT
             t.customer_bk,
@@ -213,7 +255,7 @@ BEGIN;
             t.hashdiff,
             t.eff_date
         FROM delta t
-        LEFT JOIN current c
+        LEFT JOIN current_ver c
           ON c.customer_bk = t.customer_bk
         WHERE c.customer_status_sk IS NULL
            OR (c.hashdiff <> t.hashdiff AND t.eff_date > c.valid_from)
@@ -237,6 +279,11 @@ BEGIN;
     );
 COMMIT;
 
+-- Проверка: у клиента 101 должна появиться 5-я строка (active с 2024-11-15),
+-- у 104 - первая строка (new с 2024-06-01)
+SELECT 'dim_customer_status after increment = ' || COUNT(*) FROM dds.dim_customer_status;
+SELECT * FROM dds.dim_customer_status ORDER BY customer_bk, valid_from;
+
 -- ==========================================================
 -- 4) DM: витрина статусов клиентов по датам (full refresh)
 -- ==========================================================
@@ -244,12 +291,7 @@ COMMIT;
 -- Витрина "снимок на дату":
 -- для каждого дня считаем, сколько клиентов было в каждом статусе.
 -- Берём календарь dds.dim_date и подбираем статус по периоду valid_from/valid_to.
-
-CREATE TABLE IF NOT EXISTS dm.mart_customer_status_daily (
-    date_actual    DATE        NOT NULL,
-    status         VARCHAR(20) NOT NULL,
-    customers_cnt  INT         NOT NULL
-);
+-- DDL витрины - в 07_ddl_hw_customer_status.sql.
 
 TRUNCATE dm.mart_customer_status_daily;
 
@@ -274,3 +316,10 @@ JOIN dds.dim_customer_status s
  AND (s.valid_to IS NULL OR d.date_actual < s.valid_to)
 GROUP BY d.date_actual, s.status
 ORDER BY d.date_actual, s.status;
+
+-- Проверка: выборочные даты из витрины
+SELECT 'mart_customer_status_daily count = ' || COUNT(*) FROM dm.mart_customer_status_daily;
+SELECT *
+FROM dm.mart_customer_status_daily
+WHERE date_actual IN ('2024-01-15', '2024-04-10', '2024-09-15', '2024-12-01')
+ORDER BY date_actual, status;

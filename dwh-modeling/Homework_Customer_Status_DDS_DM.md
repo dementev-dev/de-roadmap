@@ -62,11 +62,12 @@ customer_id,status,event_ts,_load_id,_load_ts
 1. Поднимите demo‑Postgres по инструкции из корневого `README.md`.
 2. Выполните базовые скрипты DWH:
    - `01_ddl_stg-dds.sql`
-   - `02_dml_stg-dds.sql`
+   - `02_dml_stg-dds.sql` (нужен как минимум для `dds.dim_date`)
+   - `05_ddl_dm.sql` (создаёт схему `dm` для витрин)
 3. Выполните DDL для домашки:
    - `07_ddl_hw_customer_status.sql`
 
-После этого схемы `stg`, `ods`, `dds` уже существуют, а дополнительные таблицы для статусов созданы.
+После этого схемы `stg`, `ods`, `dds`, `dm` уже существуют, а дополнительные таблицы для статусов созданы.
 
 ---
 
@@ -242,20 +243,7 @@ cat dwh-modeling/data/customer_status_events_increment.csv | ./postgres-bookings
 
 Опциональное задание для закрепления: собрать небольшую витрину с количеством клиентов по статусам на каждую дату.
 
-Перед началом убедитесь, что слой DM создан (схема `dm` и таблицы):
-
-- выполните `dwh-modeling/sql/05_ddl_dm.sql` (один раз);
-- затем можно собирать витрину.
-
-Пример целевой таблицы:
-
-```sql
-CREATE TABLE dm.mart_customer_status_daily (
-    date_actual    DATE        NOT NULL,
-    status         VARCHAR(20) NOT NULL,
-    customers_cnt  INT         NOT NULL
-);
-```
+DDL витрины уже создан в `07_ddl_hw_customer_status.sql` (таблица `dm.mart_customer_status_daily`).
 
 Идея:
 
