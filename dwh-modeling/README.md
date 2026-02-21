@@ -544,11 +544,17 @@ flowchart TD
 
 ```sql
 -- mart_daily_sales: ежедневные продажи с сегментацией
-CREATE MATERIALIZED VIEW dm.mart_daily_sales AS
+-- Полная пересборка (full refresh) - для простоты; в продакшене бывает incremental.
+TRUNCATE dm.mart_daily_sales;
+
+INSERT INTO dm.mart_daily_sales (
+    date_actual, product_name, customer_segment, total_qty, total_revenue
+)
 SELECT
-    d.date_actual AS order_date,
+    d.date_actual,
     p.product_name,
-    c.customer_segment,        -- например: 'Premium', 'Basic'
+    -- Сегмент определяем по сумме строки (в реальности может быть атрибутом клиента)
+    CASE WHEN f.amount >= 200 THEN 'Premium' ELSE 'Basic' END AS customer_segment,
     SUM(f.quantity) AS total_qty,
     SUM(f.amount) AS total_revenue
 FROM dds.fact_sales f
@@ -557,13 +563,12 @@ JOIN dds.dim_date d
 JOIN dds.dim_product p
   ON f.product_sk = p.product_sk
 JOIN dds.dim_customer c
-  ON f.customer_sk = c.customer_sk
-  AND d.date_actual >= c.valid_from
-  AND (c.valid_to IS NULL OR d.date_actual < c.valid_to)  -- SCD!
-GROUP BY d.date_actual, p.product_name, c.customer_segment;
+  ON f.customer_sk = c.customer_sk   -- факт ссылается на нужную версию SK
+GROUP BY d.date_actual, p.product_name,
+         CASE WHEN f.amount >= 200 THEN 'Premium' ELSE 'Basic' END;
 ```
 
-> 💡 **Материализованное представление (MATERIALIZED VIEW)** — это «кэш» результата. Обновляется по расписанию (например, ночью).
+> 💡 В продакшене витрину иногда оформляют как **MATERIALIZED VIEW** - «кэш» результата запроса, который обновляется по расписанию. В нашем примере используем обычную таблицу с `TRUNCATE` + `INSERT` - для учебных целей это нагляднее.
 
 ✏️ **Попробуйте сами:** [Домашка: статусы клиента от STG до DDS (и немного DM)](Homework_Customer_Status_DDS_DM.md) — пройдёте тот же путь, но самостоятельно.
 

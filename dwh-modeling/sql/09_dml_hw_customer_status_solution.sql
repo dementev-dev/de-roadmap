@@ -311,6 +311,8 @@ WITH bounds AS (
         min(valid_from)                                           AS date_from,
         -- CURRENT_DATE для открытых интервалов (valid_to IS NULL = текущий статус),
         -- иначе витрина не покроет даты после последней смены статуса.
+        -- Нюанс: количество строк в витрине зависит от даты запуска (каждый
+        -- день добавляется ещё один день). Для учебных целей это приемлемо.
         max(coalesce(valid_to, CURRENT_DATE))                     AS date_to
     FROM dds.dim_customer_status
 )
