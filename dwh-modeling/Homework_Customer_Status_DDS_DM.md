@@ -52,9 +52,9 @@ customer_id,status,event_ts,_load_id,_load_ts
 Чтобы не тратить время на DDL, структуры таблиц для домашки уже подготовлены в `dwh-modeling/sql`:
 
 - `07_ddl_hw_customer_status.sql` — создаёт дополнительные таблицы:
-  - `stg.customer_status_raw` — сырые события о статусе клиента;
-  - `ods.customer_status` — очищенные и типизированные события;
-  - `dds.dim_customer_status` — измерение статусов клиента в формате **SCD Type 2**.
+    - `stg.customer_status_raw` — сырые события о статусе клиента;
+    - `ods.customer_status` — очищенные и типизированные события;
+    - `dds.dim_customer_status` — измерение статусов клиента в формате **SCD Type 2**.
 - `08_dml_hw_customer_status_template.sql` — шаблон DML-скрипта с подсказками и заготовками блоков.
 
 Перед началом работы:
@@ -127,9 +127,9 @@ SELECT * FROM stg.customer_status_raw LIMIT 10;
 В файле `08_dml_hw_customer_status_template.sql` найдите заготовку блока ODS и допишите SQL:
 
 - привести:
-  - `customer_id` → `INT`,
-  - `status` → `VARCHAR(20)` (можно оставить как есть),
-  - `event_ts` и `_load_ts` → `TIMESTAMP`;
+    - `customer_id` → `INT`,
+    - `status` → `VARCHAR(20)` (можно оставить как есть),
+    - `event_ts` и `_load_ts` → `TIMESTAMP`;
 - аккуратно обработать возможные пустые значения (если бы они были);
 - заполнить `_load_id` и `_load_ts` в `ods.customer_status`.
 
@@ -234,8 +234,8 @@ cat dwh-modeling/data/customer_status_events_increment.csv | ./postgres-bookings
 
 - ориентируйтесь на пример из `03_demo_increment.sql` для `dds.dim_customer`;
 - важно:
-  - корректно «закрыть» старую актуальную строку (заполнить `valid_to` датой начала новой версии);
-  - вставить новую строку с `valid_to = NULL`.
+    - корректно «закрыть» старую актуальную строку (заполнить `valid_to` датой начала новой версии);
+    - вставить новую строку с `valid_to = NULL`.
 
 Эта часть особенно полезна, если вы хотите почувствовать, как SCD2 живёт в реальном DWH.
 
