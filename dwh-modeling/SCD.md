@@ -283,6 +283,7 @@ LEFT JOIN current_customers c ON n.customer_id = c.customer_id
 
 ###### Шаг 3: Вставка новых версий
 Для подходящих записей создаём новую версию:
+
 - `uuid()` — генерируем уникальный ключ для новой версии
 - `current_date` - функция, возвращающая текущую даты
 - `COALESCE(n.effective_date, current_date)` — устанавливаем дату начала действия новой версии

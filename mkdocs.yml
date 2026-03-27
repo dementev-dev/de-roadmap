@@ -1,0 +1,73 @@
+site_name: "DE Roadmap — Data Engineering с нуля до middle"
+site_url: https://dementev-dev.github.io/de-roadmap/
+site_description: "Роадмап по Data Engineering: SQL, Python, Airflow, Greenplum и далее"
+site_author: Dmitry Dementev
+
+repo_url: https://github.com/dementev-dev/de-roadmap
+repo_name: dementev-dev/de-roadmap
+
+docs_dir: .
+site_dir: site
+
+exclude_docs: |
+  project/
+  postgres-bookings/
+  .github/
+  .claude/
+  site/
+  AGENTS.md
+  CLAUDE.md
+  COMMIT_RULES.md
+  LICENSE
+  .gitignore
+  mkdocs.yml
+  dwh-modeling/TODO.md
+
+nav:
+  - Роадмап: README.md
+  - Моделирование данных:
+      - Введение: dwh-modeling/README.md
+      - SCD: dwh-modeling/SCD.md
+      - Data Vault: dwh-modeling/DataVault.md
+      - "Домашка: STG → DDS → DM": dwh-modeling/Homework_Customer_Status_DDS_DM.md
+
+theme:
+  name: material
+  language: ru
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Тёмная тема
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Светлая тема
+  features:
+    - navigation.top
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
+    - toc.follow
+    - content.code.copy
+
+markdown_extensions:
+  - toc:
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+      permalink: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - attr_list
+
+plugins:
+  - same-dir
+  - search:
+      lang: ru
