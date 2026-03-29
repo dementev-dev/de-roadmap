@@ -22,6 +22,7 @@ exclude_docs: |
   .gitignore
   mkdocs.yml
   dwh-modeling/TODO.md
+  overrides/
 
 nav:
   - Роадмап: README.md
@@ -33,6 +34,7 @@ nav:
 
 theme:
   name: material
+  custom_dir: overrides
   language: ru
   palette:
     - scheme: default
@@ -66,6 +68,15 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.highlight
   - attr_list
+
+extra:
+  social:
+    - icon: fontawesome/brands/telegram
+      link: https://t.me/dementev_dev
+      name: Написать в Telegram
+    - icon: fontawesome/brands/github
+      link: https://github.com/dementev-dev/de-roadmap
+      name: GitHub
 
 plugins:
   - same-dir
