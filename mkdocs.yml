@@ -31,6 +31,10 @@ nav:
       - SCD: dwh-modeling/SCD.md
       - Data Vault: dwh-modeling/DataVault.md
       - "Домашка: STG → DDS → DM": dwh-modeling/Homework_Customer_Status_DDS_DM.md
+  - Разработка с ИИ:
+      - Введение: ai-dev/README.md
+      - Лучшие практики: ai-dev/best-practice.md
+      - Механизм памяти: ai-dev/memory-mechanism.md
 
 theme:
   name: material
