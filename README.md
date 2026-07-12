@@ -15,7 +15,7 @@
 - [Основные знания](#основные-знания) — Git, SQL, Python, методологии, Docker
 - [Практика и инструменты](#практика-и-инструменты) — Airflow, Greenplum, курсовая работа
 - [Карьера и менторство](#карьера-и-менторство) — резюме, собеседования, испытательный срок
-- [Расширенные навыки](#расширенные-навыки) — ClickHouse, Streaming, Lakehouse, dbt
+- [Расширенные навыки](#расширенные-навыки) — Streaming, ClickHouse, Lakehouse, dbt
 - [Софт скиллы](#софт-скиллы)
 - [Дополнительные материалы](#дополнительные-материалы)
 
@@ -305,10 +305,6 @@ Apache Airflow — инструмент для оркестрации ETL-про
 - Стенд покрывает основные темы курса: типы таблиц (heap / appendonly), политики дистрибуции, сжатие, PXF, анализ планов выполнения (`EXPLAIN`).
 - Единственное ограничение: cloud-специфичные темы (тема 2 курса — развёртывание в Yandex Cloud) на локальном стенде не покрыты.
 
-Дополнительно:
-
-- [Учебный курс по Greenplum от datafinder](https://datafinder.ru/products/uchebnyy-kurs-po-greenplum) — отдельные главы для углубления.
-
 **Когда блок Greenplum считаем пройденным:**
 
 - вы понимаете, как данные распределяются по сегментам, что такое skew и как его увидеть;
@@ -402,18 +398,6 @@ Apache Airflow — инструмент для оркестрации ETL-про
 Практика ограничивается минимальным рабочим примером (запуск в Docker, простой пайплайн или SQL-модель).
 Этого достаточно, чтобы уверенно говорить об инструменте на собеседовании и понимать его место в архитектуре — а всё остальное при необходимости осваивается уже на проекте.
 
-### ClickHouse
-
-Материалы:
-
-- Бесплатный курс [ClickHouse от Yandex Cloud](https://yandex.cloud/ru/training/clickhouse)
-- Платный курс [ClickHouse для аналитика – Stepik](https://stepik.org/course/100210/promo?search=6551441002)
-
-Стенды для практики:
-
-- [clickhouse-learning-cluster](https://github.com/dementev-dev/clickhouse-learning-cluster) — учебный кластер ClickHouse в Docker Compose: 4 узла, репликация, шардинг, балансировка через HAProxy. Задачи курса Яндекса удобно выполнять на этом стенде — облачный кластер не нужен.
-- [clickstream-ch-kafka-superset-demo](https://github.com/dementev-dev/clickstream-ch-kafka-superset-demo) — стенд, имитирующий полноценное аналитическое хранилище на ClickHouse: Kafka, Airflow, дашборды в Superset, мониторинг (Prometheus/Grafana), слои STG → ODS → DDS → DM и разные виды учебных потоков. Внутри — продвинутый курс «Кликстрим на ClickHouse».
-
 ### Streaming (NiFi + Kafka)
 NiFi — визуальный конструктор потоков данных, Kafka — распределённая очередь сообщений. Вместе они закрывают типичный сценарий: принять данные, буферизовать, доставить в хранилище.
 
@@ -427,12 +411,34 @@ NiFi — визуальный конструктор потоков данных
 - настраиваем в NiFi простой генератор данных и поток в Postgres;
 - строим поток NiFi → Kafka → NiFi → Postgres.
 
+Знакомство с Kafka здесь пригодится и дальше: стенд по ClickHouse в следующей секции принимает данные именно через Kafka.
+
+### ClickHouse
+
+Материалы:
+
+- Бесплатный курс [ClickHouse от Yandex Cloud](https://yandex.cloud/ru/training/clickhouse) — берём за основу, в нём много упражнений
+- Платный курс [ClickHouse для аналитика – Stepik](https://stepik.org/course/100210/promo?search=6551441002)
+
+Практика:
+
+- Упражнения курса Яндекса можно выполнять в их облаке (с оплатой за ресурсы) или бесплатно у себя — на учебном кластере [clickhouse-learning-cluster](https://github.com/dementev-dev/clickhouse-learning-cluster): 4 узла ClickHouse в Docker Compose, репликация, шардинг, балансировка через HAProxy.
+- Следующий шаг — стенд [clickstream-ch-kafka-superset-demo](https://github.com/dementev-dev/clickstream-ch-kafka-superset-demo), имитирующий полноценное аналитическое хранилище на ClickHouse: Kafka, Airflow, дашборды в Superset, мониторинг (Prometheus/Grafana), слои STG → ODS → DDS → DM. Внутри — собственный продвинутый курс «Кликстрим на ClickHouse» с уроками прямо на стенде.
+
 ### Lakehouse (Spark, Iceberg, Trino)
 
-> Секция в разработке. Lakehouse — отдельное направление в DE, построенное на разделении compute и storage, открытых табличных форматах (Iceberg, Delta) и движках распределённой обработки (Spark, Trino). Этот роадмап фокусируется на классическом DWH-стеке, поэтому полноценный блок пока не готов — ниже только отправные точки для самостоятельного изучения.
+Lakehouse — отдельное направление в DE, построенное на разделении compute и storage, открытых табличных форматах (Iceberg, Delta) и движках распределённой обработки (Spark, Trino). Роадмап фокусируется на классическом DWH-стеке, поэтому здесь цель — знакомство, но с настоящей практикой, а не только теорией.
+
+Материалы:
 
 - [DataLearn: «Что такое Apache Spark»](https://youtu.be/Tl9YzC-dQLI) — введение в Spark с нуля, ~40 минут
-- Стенд для экспериментов: [mini-lakehouse-lab](https://github.com/dementev-dev/mini-lakehouse-lab) (Spark + Iceberg + Trino + MinIO)
+
+Практика — курс [«Lakehouse без магии»](https://github.com/dementev-dev/mini-lakehouse-lab) на стенде mini-lakehouse-lab (Spark + Iceberg + Trino + MinIO, всё локально в Docker, без облаков и регистраций):
+
+- 8 модулей на ~12–15 часов самостоятельной работы; в каждом — объяснение, демонстрация, задание и checkpoint;
+- пайплайн `raw → bronze → silver` на реальном датасете NYC Taxi;
+- одна таблица из двух движков: запись через Spark, чтение через Trino — и почему это работает без копирования данных;
+- schema evolution, time travel и обслуживание таблиц (compaction, expire_snapshots) — с параллелями к знакомым VACUUM/REORGANIZE из мира Postgres/Greenplum.
 
 ### dbt
 dbt (data build tool) — инструмент для трансформации данных в хранилище.
