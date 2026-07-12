@@ -60,7 +60,7 @@ All `.md` files MUST render correctly on both GitHub and the MkDocs Material sit
   `npx playwright screenshot --viewport-size='1280,800' 'http://127.0.0.1:8000/#anchor' /path/to/screenshot.png`
   Then read the screenshot with the Read tool to inspect rendering. Use `--viewport-size='1280,2000'` for tall pages.
 - Kill stuck dev server: `lsof -ti :8000 | xargs kill`
-- Site URL: `https://dementev-dev.github.io/de-roadmap/`
+- Site URL: `https://de.dementev.space/` (старый адрес `https://dementev-dev.github.io/de-roadmap/` отдаёт 404)
 
 ## Testing Guidelines
 - There is no dedicated test framework; treat SQL scripts as executable documentation.
