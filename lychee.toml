@@ -1,0 +1,29 @@
+# Конфигурация lychee — CI-проверка внешних ссылок
+# Используется в .github/workflows/check-links.yml (подхватывается автоматически)
+# Локальный запуск: docker run --rm -v "$PWD:/input" -w /input lycheeverse/lychee './**/*.md'
+
+# Служебные каталоги и каталоги, исключённые из сайта
+exclude_path = ["project", "site"]
+
+# Локальные адреса стендов (127.0.0.1, localhost и т.п.)
+exclude_all_private = true
+
+exclude = [
+    # Режут ботов и датацентровые IP (проверять вручную из браузера)
+    "^https?://habr\\.com",
+    "^https?://stepik\\.org",
+    "^https?://leetcode\\.com",
+    "^https?://realpython\\.com",
+    # YouTube в CI ненадёжен: 429 на пачку запросов, удалённые видео отдают 200
+    "^https?://(www\\.)?youtube\\.com",
+    "^https?://youtu\\.be",
+    # Telegram отдаёт 200 даже для несуществующих каналов
+    "^https?://t\\.me",
+]
+
+# 429 (rate limit) не считаем битой ссылкой
+accept = ["200..=204", "429"]
+
+max_retries = 2
+timeout = 30
+user_agent = "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0"

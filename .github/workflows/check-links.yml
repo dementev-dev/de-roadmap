@@ -1,0 +1,54 @@
+name: Check external links
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # понедельник 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  actions: write # для keepalive-шага
+
+jobs:
+  link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run lychee
+        id: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # остальные настройки — в lychee.toml в корне репозитория
+          args: --no-progress './**/*.md'
+          fail: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # если открытый issue с меткой link-check уже есть — обновляем его,
+      # а не создаём дубликат каждую неделю
+      - name: Find open link-check issue
+        if: steps.lychee.outputs.exit_code != 0
+        id: issue
+        run: |
+          echo "number=$(gh issue list --repo "$GITHUB_REPOSITORY" --label link-check --state open --json number --jq '.[0].number // empty')" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Create or update issue on broken links
+        if: steps.lychee.outputs.exit_code != 0
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: "Битые внешние ссылки: еженедельная проверка"
+          content-filepath: ./lychee/out.md
+          labels: link-check
+          issue-number: ${{ steps.issue.outputs.number }}
+
+      # GitHub отключает scheduled-workflows после 60 дней без активности
+      # в репозитории; повторное включение сбрасывает таймер
+      - name: Keep scheduled workflow enabled
+        if: always()
+        run: gh api -X PUT "repos/$GITHUB_REPOSITORY/actions/workflows/check-links.yml/enable"
+        env:
+          GH_TOKEN: ${{ github.token }}
