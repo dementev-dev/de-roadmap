@@ -6,7 +6,7 @@
 - `postgres-bookings/` is a Dockerized PostgreSQL + demo “bookings” DB; start it first, then apply DWH scripts against the `demo` database.
 - `mkdocs.yml` — MkDocs Material config; `docs_dir: .` (repo root = site root). Excluded dirs: `project/`, `postgres-bookings/`, `.github/`, `.claude/`.
 - `.github/workflows/deploy-site.yml` — CI/CD: push to `main` → build → deploy to GitHub Pages.
-- `project/` — PRD and ADR (excluded from site).
+- `project/` — PRD, ADR, and TODO.md (excluded from site). `project/TODO.md` is the prioritized project backlog: check it when planning or proposing work, and mark items done there when you complete them.
 
 ## Build, Test, and Development Commands
 - Start demo Postgres:  
