@@ -4,8 +4,11 @@
 - Root `README.md` describes the learning roadmap (RU) and serves as the main page of the MkDocs site.
 - `dwh-modeling/` contains the article and demo DWH model; SQL lives in `dwh-modeling/sql` as ordered scripts `01_...sql`–`09_...sql` (07–09 are homework DDL, template and solution).
 - `postgres-bookings/` is a Dockerized PostgreSQL + demo “bookings” DB; start it first, then apply DWH scripts against the `demo` database.
-- `mkdocs.yml` — MkDocs Material config; `docs_dir: .` (repo root = site root). Excluded dirs: `project/`, `postgres-bookings/`, `.github/`, `.claude/`.
-- `.github/workflows/deploy-site.yml` — CI/CD: push to `main` → build → deploy to GitHub Pages.
+- `mkdocs.yml` — MkDocs Material config; `docs_dir: .` (repo root = site root). Excluded dirs: `project/`, `postgres-bookings/`, `.gitea/`, `.github/`, `.claude/`.
+- `.gitea/workflows/deploy-site.yml` — основной CI/CD: push в `main` → строгая
+  сборка → атомарная публикация на VPS через repository-scoped Gitea Runner.
+- `.github/workflows/deploy-site.yml` — сохранённый workflow для резервной
+  публикации на GitHub Pages; Gitea его не исполняет.
 - `project/` — PRD, ADR, and TODO.md (excluded from site). `project/TODO.md` is the prioritized project backlog: check it when planning or proposing work, and mark items done there when you complete them.
 
 ## Build, Test, and Development Commands
@@ -75,5 +78,7 @@ Pull requests should focus on one topic, include a brief context, list of change
 
 ## Security & Configuration Tips
 - Do not commit personal `.env` files or credentials; use local overrides only.
+- Gitea Runner работает в host mode: не расширяйте его scope, не добавляйте
+  пользователя `gitea-runner` в `sudo` или `docker` и не выдавайте ему запись
+  вне `/var/lib/gitea-runner` и `/srv/de-roadmap`.
 - Demo credentials and ports in `postgres-bookings` are for local training only—never reuse them in shared or production environments.
-

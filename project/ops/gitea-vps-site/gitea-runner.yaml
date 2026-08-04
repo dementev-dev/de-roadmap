@@ -1,0 +1,37 @@
+log:
+  level: info
+
+runner:
+  file: /var/lib/gitea-runner/.runner
+  capacity: 1
+  timeout: 15m
+  shutdown_timeout: 30s
+  insecure: false
+  fetch_timeout: 5s
+  fetch_interval: 2s
+  fetch_interval_max: 10s
+  workdir_cleanup_age: 24h
+  idle_cleanup_interval: 10m
+  labels:
+    - "de-roadmap-host:host"
+  allocate_pty: false
+
+cache:
+  enabled: false
+
+container:
+  valid_volumes: []
+  docker_host: "-"
+  require_docker: false
+
+host:
+  workdir_parent: /var/lib/gitea-runner/workspaces
+
+health_check:
+  enabled: true
+  min_free_disk_space_mb: 1024
+  interval: 30s
+  timeout: 10s
+
+metrics:
+  enabled: false

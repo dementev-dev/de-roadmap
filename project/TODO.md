@@ -4,6 +4,10 @@
 
 ## P1
 
+- [ ] **Перенести публикацию сайта на Gitea Actions и VPS.**
+  Настроить repository-scoped host runner, строгую сборку MkDocs, атомарные
+  релизы, nginx и TLS для `de.dementev.space` по согласованной спецификации.
+
 ## P2
 
 - [ ] **Перенос учебника Airflow в de-roadmap.**

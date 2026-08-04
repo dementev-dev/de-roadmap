@@ -1,0 +1,46 @@
+name: Deploy MkDocs to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: site-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: de-roadmap-host
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out the triggering commit
+        env:
+          COMMIT_SHA: ${{ gitea.sha }}
+          REPOSITORY_URL: ${{ gitea.server_url }}/${{ gitea.repository }}.git
+        run: |
+          set -euo pipefail
+          [[ "$COMMIT_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test ! -e source
+          mkdir source
+          git -C source init .
+          git -C source remote add origin "$REPOSITORY_URL"
+          git -C source fetch --no-tags --depth=1 origin "$COMMIT_SHA"
+          test "$(git -C source rev-parse FETCH_HEAD)" = "$COMMIT_SHA"
+          git -C source -c advice.detachedHead=false checkout --detach FETCH_HEAD
+
+      - name: Build the site strictly
+        run: |
+          set -euo pipefail
+          cd source
+          uv run \
+            --no-project \
+            --with 'mkdocs-material==9.6.14' \
+            --with 'mkdocs-same-dir==0.1.3' \
+            mkdocs build --strict
+
+      - name: Publish the complete release atomically
+        env:
+          RELEASE_ID: ${{ gitea.sha }}-${{ gitea.run_id }}
+        run: source/.gitea/scripts/deploy-site.sh source/site "$RELEASE_ID"
