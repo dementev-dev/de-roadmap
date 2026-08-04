@@ -3,8 +3,8 @@ site_url: https://de.dementev.space/
 site_description: "Роадмап по Data Engineering: SQL, Python, Airflow, Greenplum и далее"
 site_author: Dmitry Dementev
 
-repo_url: https://github.com/dementev-dev/de-roadmap
-repo_name: dementev-dev/de-roadmap
+repo_url: https://git.dementev.space/ddmitry/de-roadmap
+repo_name: ddmitry/de-roadmap
 
 docs_dir: .
 site_dir: site
@@ -13,6 +13,7 @@ exclude_docs: |
   project/
   postgres-bookings/
   .github/
+  .gitea/
   .claude/
   site/
   AGENTS.md
@@ -75,12 +76,12 @@ markdown_extensions:
 
 extra:
   social:
+    - icon: simple/gitea
+      link: https://git.dementev.space/ddmitry/de-roadmap
+      name: Gitea
     - icon: fontawesome/brands/telegram
       link: https://t.me/dementev_dev
       name: Написать в Telegram
-    - icon: fontawesome/brands/github
-      link: https://github.com/dementev-dev/de-roadmap
-      name: GitHub
 
 plugins:
   - same-dir
