@@ -12,6 +12,7 @@
 - Пользователь сервиса: `gitea-runner`, без `sudo` и Docker.
 - Корень публикации: `/srv/de-roadmap`.
 - Хранение: текущий релиз и две предыдущие версии.
+- Окружение сборки: `/var/lib/gitea-runner/venvs/site`.
 
 ## Подготовка VPS
 
@@ -19,7 +20,7 @@
 
 ```bash
 sudo apt-get update
-sudo apt-get install nginx certbot python3-certbot-nginx
+sudo apt-get install nginx certbot python3-certbot-nginx python3-venv
 ```
 
 Создать пользователя и каталоги:
@@ -125,6 +126,13 @@ curl --header 'Host: de.dementev.space' http://127.0.0.1/
 
 После локальной проверки разрешить профили `Nginx Full` в UFW. До этого
 публичные порты `80/tcp` и `443/tcp` должны оставаться закрытыми.
+
+## Окружение сборки
+
+Скрипт `.gitea/scripts/build-site.sh` создаёт persistent venv при первом запуске
+и переиспользует его в следующих сборках. `pip install` выполняется каждый раз,
+чтобы применить изменения `.gitea/requirements-site.txt`, но уже установленные
+версии пакетов не переустанавливаются.
 
 ## DNS и TLS
 

@@ -15,9 +15,7 @@ RestartSec=10s
 TimeoutStopSec=45s
 KillMode=mixed
 
-Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
-Environment="UV_CACHE_DIR=/var/lib/gitea-runner/.cache/uv"
-Environment="UV_PYTHON_DOWNLOADS=never"
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 UMask=0022
 NoNewPrivileges=true
