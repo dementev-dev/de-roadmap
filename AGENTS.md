@@ -55,10 +55,12 @@ All `.md` files MUST render correctly on both GitHub and the MkDocs Material sit
 - Avoid: em-dash `—`, en-dash `–` — slug behavior differs between GitHub and MkDocs.
 
 ## MkDocs Site Commands
+- Initialize or update the persistent local environment:
+  `python3 -m venv "${HOME}/.cache/de-roadmap-mkdocs" && "${HOME}/.cache/de-roadmap-mkdocs/bin/python" -m pip install -r .gitea/requirements-site.txt`
 - Local preview (user starts, ask user to run via `!`):
-  `uv run --with 'mkdocs-material==9.6.14' --with 'mkdocs-same-dir==0.1.3' mkdocs serve`
+  `"${HOME}/.cache/de-roadmap-mkdocs/bin/python" -m mkdocs serve`
 - Build with strict validation (catches broken links/anchors):
-  `uv run --with 'mkdocs-material==9.6.14' --with 'mkdocs-same-dir==0.1.3' mkdocs build --strict`
+  `"${HOME}/.cache/de-roadmap-mkdocs/bin/python" -m mkdocs build --strict`
 - Visual check via Playwright (when `mkdocs serve` is running on port 8000):
   `npx playwright screenshot --viewport-size='1280,800' 'http://127.0.0.1:8000/#anchor' /path/to/screenshot.png`
   Then read the screenshot with the Read tool to inspect rendering. Use `--viewport-size='1280,2000'` for tall pages.

@@ -15,13 +15,35 @@
 - Окружение сборки: `/var/lib/gitea-runner/venvs/site`.
 - Публичный IPv4 VPS: `167.224.64.252`.
 
+## Предварительные условия
+
+- Есть пользователь с `sudo` и рабочий SSH-доступ к VPS.
+- Есть доступ к управлению DNS-зоной `dementev.space`.
+- В репозитории `ddmitry/de-roadmap` включены Gitea Actions.
+
 ## Подготовка VPS
 
-Установить HTTP-сервер и Certbot:
+Установить Git, HTTP-сервер, Certbot, UFW и Python venv:
 
 ```bash
 sudo apt-get update
-sudo apt-get install nginx certbot python3-certbot-nginx python3-venv
+sudo apt-get install \
+  ca-certificates \
+  certbot \
+  curl \
+  git \
+  jq \
+  nginx \
+  python3-certbot-nginx \
+  python3-venv \
+  ufw
+```
+
+Получить административный checkout, из которого устанавливаются tracked-файлы:
+
+```bash
+git clone https://git.dementev.space/ddmitry/de-roadmap.git
+cd de-roadmap
 ```
 
 Создать пользователя и каталоги:
@@ -95,9 +117,13 @@ sudo rm /var/lib/gitea-runner/.registration-token
 sudo chmod 0600 /var/lib/gitea-runner/.runner
 sudo systemctl daemon-reload
 sudo systemctl enable --now gitea-runner
+systemctl is-enabled gitea-runner
+systemctl is-active gitea-runner
 ```
 
-Временный файл с токеном удаляют сразу после успешной регистрации.
+Временный файл с токеном удаляют сразу после успешной регистрации. В Gitea на
+странице Settings → Actions → Runners runner `de-roadmap-vps` должен перейти в
+состояние online и показывать метку `de-roadmap-host`.
 
 ## Nginx и первичная публикация
 
@@ -132,16 +158,6 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-До первого workflow можно собрать сайт вручную и опубликовать его тем же
-скриптом с тестовым release id. Проверка до переключения DNS:
-
-```bash
-curl --header 'Host: de.dementev.space' http://127.0.0.1/
-```
-
-После локальной проверки разрешить профили `Nginx Full` в UFW. До этого
-публичные порты `80/tcp` и `443/tcp` должны оставаться закрытыми.
-
 Файл `project/ops/gitea-vps-site/nginx.conf` предназначен только для запуска до
 выпуска сертификата. После выпуска сертификата Certbot изменяет установленный
 virtual host. Повторная установка bootstrap-файла поверх рабочего конфига
@@ -154,11 +170,42 @@ virtual host. Повторная установка bootstrap-файла пов�
 чтобы применить изменения `.gitea/requirements-site.txt`, но уже установленные
 версии пакетов не переустанавливаются.
 
+## Первый деплой
+
+В Gitea открыть Actions → Deploy MkDocs to VPS, выбрать ветку `main` и нажать
+Run workflow. Job `deploy` должен завершиться успешно. Проверить опубликованный
+release и локальную выдачу nginx до переключения DNS:
+
+```bash
+readlink -f /srv/de-roadmap/current
+curl --fail --header 'Host: de.dementev.space' http://127.0.0.1/
+```
+
+Затем разрешить SSH, HTTP и HTTPS в UFW. Если SSH работает не на стандартном
+порту `22`, сначала разрешить фактический порт вместо профиля `OpenSSH`:
+
+```bash
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow OpenSSH
+sudo ufw allow 'Nginx Full'
+sudo ufw enable
+sudo ufw status verbose
+```
+
+Ожидается политика `deny (incoming)` и разрешения только для SSH, `80/tcp` и
+`443/tcp`.
+
 ## DNS и TLS
 
 1. Уменьшить TTL записи `de.dementev.space`.
 2. Направить `A` на VPS; удалить или корректно направить `AAAA`.
-3. Убедиться, что сайт доступен извне по HTTP.
+3. Убедиться, что сайт доступен извне по HTTP:
+
+    ```bash
+    curl --fail --head http://de.dementev.space/
+    ```
+
 4. Выпустить сертификат и включить перенаправление HTTP на HTTPS:
 
     ```bash
@@ -198,15 +245,39 @@ virtual host. Повторная установка bootstrap-файла пов�
 ## Проверка и откат
 
 Активная версия определяется ссылкой `/srv/de-roadmap/current`. Для ручного
-отката создать временную ссылку на нужный каталог в `releases/` и атомарно
-заменить `current` через `mv -Tf`. Перед удалением релиза всегда проверять
-результат `readlink -f /srv/de-roadmap/current`.
+отката сначала выбрать точный release id из сохранённых каталогов, затем создать
+временную ссылку и атомарно заменить `current`:
+
+```bash
+find /srv/de-roadmap/releases \
+  -mindepth 1 \
+  -maxdepth 1 \
+  -type d \
+  -printf '%f\n' \
+  | sort
+
+rollback_release='<COMMIT_SHA>-<RUN_ID>'
+rollback_link='/srv/de-roadmap/.current.rollback'
+[[ "$rollback_release" =~ ^[0-9a-f]{40}-[0-9]+$ ]]
+sudo test -d "/srv/de-roadmap/releases/${rollback_release}"
+sudo test ! -e "$rollback_link"
+sudo -u gitea-runner \
+  ln -s "releases/${rollback_release}" "$rollback_link"
+sudo -u gitea-runner \
+  mv -Tf "$rollback_link" /srv/de-roadmap/current
+readlink -f /srv/de-roadmap/current
+curl --fail --head https://de.dementev.space/
+```
+
+Откат не удаляет более новые releases. Перед их ручным удалением всегда
+проверять результат `readlink -f /srv/de-roadmap/current`.
 
 Диагностика:
 
 ```bash
-systemctl status gitea-runner
-journalctl -u gitea-runner
-nginx -t
-curl --header 'Host: de.dementev.space' http://127.0.0.1/
+sudo systemctl status gitea-runner
+sudo journalctl -u gitea-runner
+sudo nginx -t
+readlink -f /srv/de-roadmap/current
+curl --fail --head https://de.dementev.space/
 ```
