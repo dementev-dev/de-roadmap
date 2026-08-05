@@ -159,7 +159,7 @@ SQL и моделирование данных специально идут р�
     - [SkillFactory: Виртуальные окружения в Python](https://blog.skillfactory.ru/venv-virtualnoe-okruzhenie-v-python/)
 - Jupyter Lab
     - [Блог Практикума: «Что такое Jupyter Notebook: как установить и открыть»](https://practicum.yandex.ru/blog/chto-takoe-jupyter-notebook/)
-    - Готовая реализация Jupyter Lab, включающая в себя Spark, в Docker: [jupyter-spark-docker](https://github.com/dementev-dev/jupyter-spark-docker)
+    - Готовый Docker-образ Jupyter Lab со Spark: [Jupyter Docker Stacks, pyspark-notebook](https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#jupyter-pyspark-notebook)
 - Pandas
     - [GeeksforGeeks: “Why Pandas is Used in Python”](https://www.geeksforgeeks.org/pandas/why-pandas-is-used-in-python/)
     - [Skillbox: «Для чего нужна библиотека Pandas»](https://skillbox.ru/media/code/rabotaem-s-pandas-osnovnye-ponyatiya-i-realnye-dannye/)
@@ -283,7 +283,7 @@ Apache Airflow — инструмент для оркестрации ETL-про
 
 Материалы:
 
-- [Учебник по Airflow](https://github.com/dementev-dev/airflow-manual)
+- [Учебник по Airflow](https://git.dementev.space/ddmitry/airflow-manual)
 
 **Когда блок Airflow считаем пройденным:**
 
@@ -313,7 +313,7 @@ Apache Airflow — инструмент для оркестрации ETL-про
 **Курс Yandex по Greenplum** — основной учебный курс, рекомендуется пройти целиком:
 
 - [Бесплатный курс Yandex Cloud по Greenplum](https://yandex.cloud/ru/training/greenplum)
-- Практику по курсу удобно делать на стенде [airflow-dwh-gp-lab](https://github.com/dementev-dev/airflow-greenplum) — `make up` поднимает рабочий Greenplum с PXF, не нужен облачный кластер.
+- Практику по курсу удобно делать на стенде [airflow-dwh-gp-lab](https://git.dementev.space/ddmitry/airflow-greenplum) — `make up` поднимает рабочий Greenplum с PXF, не нужен облачный кластер.
 - Стенд покрывает основные темы курса: типы таблиц (heap / appendonly), политики дистрибуции, сжатие, PXF, анализ планов выполнения (`EXPLAIN`).
 - Единственное ограничение: cloud-специфичные темы (тема 2 курса — развёртывание в Yandex Cloud) на локальном стенде не покрыты.
 
@@ -326,7 +326,7 @@ Apache Airflow — инструмент для оркестрации ETL-про
 ### Курсовая работа
 Курсовая работа — важный майлстоун роадмапа: ваш первый end-to-end data-проект. После неё у вас есть ключевые технические навыки для старта карьеры в Data Engineering.
 
-Курсовая выполняется на том же стенде [airflow-dwh-gp-lab](https://github.com/dementev-dev/airflow-greenplum), который вы уже использовали для практики по Greenplum.
+Курсовая выполняется на том же стенде [airflow-dwh-gp-lab](https://git.dementev.space/ddmitry/airflow-greenplum), который вы уже использовали для практики по Greenplum.
 
 **Что внутри:**
 
@@ -417,7 +417,7 @@ NiFi — визуальный конструктор потоков данных
 - [Apache NiFi с нуля за 3 часа (Youtube-плейлист)](https://youtube.com/playlist?list=PL4MpKy3QjNp_rOEEibc4Ro8UK4g8vLX6_&si=W_hidjHmBOZ_aUfS) — первые 4 видео, дальше — по желанию
 - [Лучший Гайд по Kafka для Начинающих За 1 Час (Youtube)](https://www.youtube.com/watch?v=hbseyn-CfXY)
 
-Практика — на стенде [nifi-kafka-postgres-lab](https://github.com/dementev-dev/nifi-kafka-postgres-lab) (Docker Compose с NiFi, Kafka и Postgres):
+Практика — на стенде [nifi-kafka-postgres-lab](https://git.dementev.space/ddmitry/nifi-kafka-postgres-lab) (Docker Compose с NiFi, Kafka и Postgres):
 
 - настраиваем в NiFi простой генератор данных и поток в Postgres;
 - строим поток NiFi → Kafka → NiFi → Postgres.
@@ -434,8 +434,8 @@ ClickHouse — колоночная СУБД для аналитики на бо
 
 Практика:
 
-- Упражнения курса Яндекса можно выполнять в их облаке (с оплатой за ресурсы) или бесплатно у себя — на учебном кластере [clickhouse-learning-cluster](https://github.com/dementev-dev/clickhouse-learning-cluster): 4 узла ClickHouse в Docker Compose, репликация, шардинг, балансировка через HAProxy.
-- Следующий шаг — стенд [clickstream-ch-kafka-superset-demo](https://github.com/dementev-dev/clickstream-ch-kafka-superset-demo), имитирующий полноценное аналитическое хранилище на ClickHouse: Kafka, Airflow, дашборды в Superset, мониторинг (Prometheus/Grafana), слои STG → ODS → DDS → DM. Внутри — собственный продвинутый курс «Кликстрим на ClickHouse» с уроками прямо на стенде.
+- Упражнения курса Яндекса можно выполнять в их облаке (с оплатой за ресурсы) или бесплатно у себя — на учебном кластере [clickhouse-learning-cluster](https://git.dementev.space/ddmitry/clickhouse-learning-cluster): 4 узла ClickHouse в Docker Compose, репликация, шардинг, балансировка через HAProxy.
+- Следующий шаг — стенд [clickstream-ch-kafka-superset-demo](https://git.dementev.space/ddmitry/clickstream-ch-kafka-superset-demo), имитирующий полноценное аналитическое хранилище на ClickHouse: Kafka, Airflow, дашборды в Superset, мониторинг (Prometheus/Grafana), слои STG → ODS → DDS → DM. Внутри — собственный продвинутый курс «Кликстрим на ClickHouse» с уроками прямо на стенде.
 
 ### Lakehouse (Spark, Iceberg, Trino)
 
@@ -450,7 +450,7 @@ Lakehouse — архитектурный подход, который соеди
 - Введение в тему: [«Как не утонуть в данных: выбираем между DWH, Data Lake и Lakehouse» (Habr, Arenadata)](https://habr.com/ru/companies/arenadata/articles/885722/) — что такое Lakehouse, чем он отличается от классического DWH и Data Lake и зачем появился
 - [DataLearn: «Что такое Apache Spark»](https://youtu.be/Tl9YzC-dQLI) — введение в Spark с нуля, ~40 минут
 
-Практика — курс [«Lakehouse без магии»](https://github.com/dementev-dev/mini-lakehouse-lab) на стенде mini-lakehouse-lab (Spark + Iceberg + Trino + MinIO, всё локально в Docker, без облаков и регистраций):
+Практика — курс [«Lakehouse без магии»](https://git.dementev.space/ddmitry/mini-lakehouse-lab) на стенде mini-lakehouse-lab (Spark + Iceberg + Trino + MinIO, всё локально в Docker, без облаков и регистраций):
 
 - 8 модулей на ~12–15 часов самостоятельной работы; в каждом — объяснение, демонстрация, задание и checkpoint;
 - пайплайн `raw → bronze → silver` на реальном датасете NYC Taxi;

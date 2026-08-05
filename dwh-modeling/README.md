@@ -540,7 +540,7 @@ flowchart TD
 
 ### Готовые SQL-скрипты
 
-Все необходимые скрипты для построения хранилища находятся в папке [`sql/`](https://github.com/dementev-dev/de-roadmap/tree/main/dwh-modeling/sql):
+Все необходимые скрипты для построения хранилища находятся в папке [`sql/`](https://git.dementev.space/ddmitry/de-roadmap/src/branch/main/dwh-modeling/sql):
 
 - [`01_ddl_stg-dds.sql`](sql/01_ddl_stg-dds.sql) — создание схем и таблиц (STG, ODS, DDS);
 - [`02_dml_stg-dds.sql`](sql/02_dml_stg-dds.sql) — первичная загрузка данных и демонстрация SCD2 через полный пересчёт (`full backfill`) из STG;
@@ -791,7 +791,7 @@ SELECT 'OK' WHERE EXISTS (
 
 ### Мини-датасет (для практики)
 
-Все данные для практики находятся в папке [`data/`](https://github.com/dementev-dev/de-roadmap/tree/main/dwh-modeling/data) — тренируйтесь:
+Все данные для практики находятся в папке [`data/`](https://git.dementev.space/ddmitry/de-roadmap/src/branch/main/dwh-modeling/data) — тренируйтесь:
 
 [`customers.csv`](data/customers.csv):
 ```csv
@@ -832,7 +832,7 @@ product_id,valid_from,valid_to,price
 9002,2023-01-01,,50
 ```
 
->  📂 Все SQL-скрипты для построения хранилища находятся в папке [`sql/`](https://github.com/dementev-dev/de-roadmap/tree/main/dwh-modeling/sql).
+>  📂 Все SQL-скрипты для построения хранилища находятся в папке [`sql/`](https://git.dementev.space/ddmitry/de-roadmap/src/branch/main/dwh-modeling/sql).
 
 ---
 
