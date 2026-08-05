@@ -13,6 +13,7 @@
 - Корень публикации: `/srv/de-roadmap`.
 - Хранение: текущий релиз и две предыдущие версии.
 - Окружение сборки: `/var/lib/gitea-runner/venvs/site`.
+- Публичный IPv4 VPS: `167.224.64.252`.
 
 ## Подготовка VPS
 
@@ -100,8 +101,9 @@ sudo systemctl enable --now gitea-runner
 
 ## Nginx и первичная публикация
 
-Из корня репозитория установить virtual host, создать ссылку и только затем
-перечитать проверенную конфигурацию:
+Из корня репозитория установить bootstrap-конфигурацию nginx, создать ссылку,
+отключить стандартный сайт Ubuntu и только затем перечитать проверенную
+конфигурацию:
 
 ```bash
 sudo install -o root -g root -m 0644 \
@@ -110,12 +112,25 @@ sudo install -o root -g root -m 0644 \
 sudo ln -s \
   /etc/nginx/sites-available/de-roadmap \
   /etc/nginx/sites-enabled/de-roadmap
+sudo unlink /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-Default-сайт можно отключить только после успешной проверки нового virtual
-host.
+Первый server block в `nginx.conf` возвращает `404` для неизвестных HTTP Host,
+не раскрывает версию nginx и отклоняет TLS handshake для IP или неизвестного
+SNI. Поэтому сертификат `de.dementev.space` не выдаётся при обращении к VPS по
+IP. Если проверка конфигурации не прошла, отключить новый virtual host,
+восстановить стандартный сайт и перечитать проверенную конфигурацию:
+
+```bash
+sudo unlink /etc/nginx/sites-enabled/de-roadmap
+sudo ln -s \
+  /etc/nginx/sites-available/default \
+  /etc/nginx/sites-enabled/default
+sudo nginx -t
+sudo systemctl reload nginx
+```
 
 До первого workflow можно собрать сайт вручную и опубликовать его тем же
 скриптом с тестовым release id. Проверка до переключения DNS:
@@ -126,6 +141,11 @@ curl --header 'Host: de.dementev.space' http://127.0.0.1/
 
 После локальной проверки разрешить профили `Nginx Full` в UFW. До этого
 публичные порты `80/tcp` и `443/tcp` должны оставаться закрытыми.
+
+Файл `project/ops/gitea-vps-site/nginx.conf` предназначен только для запуска до
+выпуска сертификата. После выпуска сертификата Certbot изменяет установленный
+virtual host. Повторная установка bootstrap-файла поверх рабочего конфига
+удалит TLS-директивы.
 
 ## Окружение сборки
 
@@ -139,14 +159,41 @@ curl --header 'Host: de.dementev.space' http://127.0.0.1/
 1. Уменьшить TTL записи `de.dementev.space`.
 2. Направить `A` на VPS; удалить или корректно направить `AAAA`.
 3. Убедиться, что сайт доступен извне по HTTP.
-4. Выпустить сертификат:
+4. Выпустить сертификат и включить перенаправление HTTP на HTTPS:
 
     ```bash
-    sudo certbot --nginx -d de.dementev.space
+    sudo certbot --nginx \
+      --non-interactive \
+      --agree-tos \
+      --email me@dementev.space \
+      --redirect \
+      -d de.dementev.space
     ```
 
-5. Проверить HTTPS и `systemctl status certbot.timer`.
-6. Вернуть обычный DNS TTL.
+5. В созданном Certbot HTTP-блоке для `de.dementev.space` добавить
+   `server_tokens off;`, затем проверить и перечитать конфигурацию:
+
+    ```bash
+    sudoedit /etc/nginx/sites-available/de-roadmap
+    sudo nginx -t
+    sudo systemctl reload nginx
+    ```
+
+6. Проверить перенаправление, HTTPS, сертификат и автоматическое продление:
+
+    ```bash
+    curl --head http://de.dementev.space/
+    curl --fail --head https://de.dementev.space/
+    ! curl --insecure --head https://167.224.64.252/
+    sudo certbot certificates
+    systemctl is-enabled certbot.timer
+    systemctl is-active certbot.timer
+    ```
+
+   Ожидаются `301 Moved Permanently`, затем `200 OK`, отказ TLS по IP,
+   действующий сертификат и состояния таймера `enabled` и `active`.
+
+7. Вернуть обычный DNS TTL.
 
 ## Проверка и откат
 
