@@ -8,10 +8,13 @@
 
 ### Текущее состояние
 
-Роадмап по Data Engineering живёт как Git-репозиторий. Основной origin
-размещён в собственной Gitea
-([ddmitry/de-roadmap](https://git.dementev.space/ddmitry/de-roadmap)), а
-GitHub Pages сохраняется как резерв после восстановления доступа к GitHub:
+Роадмап по Data Engineering живет как Git-репозиторий. Основной origin
+и работа над материалами остаются в собственной Gitea
+([ddmitry/de-roadmap](https://git.dementev.space/ddmitry/de-roadmap)).
+После восстановления аккаунта GitHub изменения зеркалируются туда средствами
+Gitea. Ссылки для менти ведут на [GitHub](https://github.com/dementev-dev/de-roadmap),
+откуда удобно клонировать стенды и делать свои форки. Сайт по-прежнему
+публикуется через Gitea Actions на VPS; GitHub Pages сохраняется как резерв.
 
 - Основной контент — монолитный `README.md` (~700 строк) с полным учебным планом.
 - Дополнительные материалы — в подпапках (`dwh-modeling/`, `postgres-bookings/`): теория DWH-моделирования, SCD, Data Vault, домашние задания, скрипты.
