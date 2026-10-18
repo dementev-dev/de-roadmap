@@ -317,7 +317,7 @@ Apache Airflow — инструмент для оркестрации ETL-про
 Материалы:
 
 - [Учебник по Airflow](https://github.com/dementev-dev/airflow-manual)
-- [Практические задания на стенде](https://github.com/dementev-dev/airflow-manual/blob/main/airflow-docker/educational-tasks.md)
+- [Практические задания на стенде](https://github.com/dementev-dev/airflow-manual/blob/main/educational-tasks.md)
 
 Задания выполняем параллельно с чтением учебника. Начинаем с простых DAG
 и SQL, затем обрабатываем файлы, загружаем CSV в PostgreSQL и добавляем
